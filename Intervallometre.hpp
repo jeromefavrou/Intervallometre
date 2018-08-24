@@ -8,6 +8,8 @@
 #include <chrono>
 #include <thread>
 
+#include "Remote_controle_apn.hpp"
+
 class Intervallometre
 {
 public:
@@ -56,6 +58,8 @@ public:
                         std::cout << instruction <<std::endl;
                         continue;
                     }
+                    if(instruction[0]=='#')
+                        continue;
                 }
 
                 std::stringstream ss_buf;
@@ -85,7 +89,7 @@ public:
         return false;
     }
 
-    void run_seq(void)
+    void run_seq(RC_Apn & apn)
     {
         if(this->debug_mode)
             std::cout << " La sequance commance" <<std::endl;
@@ -112,6 +116,18 @@ public:
                 for(auto i=0;i<seq.frame;i++)
                 {
                     std::cout << "frame "<<i+1<<"/"<<seq.frame<<std:: endl;
+
+
+                    if(apn.check_apn())
+                    {
+                        std::cout <<"ne pas débrancher apn capture en cour" <<std::endl;
+                        apn.capture(seq.iso,seq.exposure,seq.aperture,seq.target,seq.format);
+                    }
+                    else
+                    {
+                        std::cout << "capture annulée aucun apn detecté" << std::endl;
+                    }
+
                 }
             }
 
