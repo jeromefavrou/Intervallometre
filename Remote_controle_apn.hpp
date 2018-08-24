@@ -43,8 +43,10 @@ public:
 private:
     void free_cmd(std::string const & cmd)
     {
-        system(std::string(cmd+std::string(" > free_cmd")).c_str());
-        std::remove("free_cmd");
+        system(std::string(cmd+std::string(this->debug_mode?" > free_cmd":"")).c_str());
+
+        if(this->debug_mode)
+            std::remove("free_cmd");
     }
 
 };
