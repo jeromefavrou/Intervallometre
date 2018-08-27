@@ -23,7 +23,7 @@ public:
         std::string buff;
         int nb_line=0;
 
-        while(getline(If,buff))
+        while(std::getline(If,buff))
         {
             if(this->debug_mode)
                 std::cout << buff << std::endl;
@@ -40,13 +40,46 @@ public:
     {
 
     }
+
+    std::vector<std::string> get_config(std::string const & cmd)
+    {
+        system(std::string(std::string("gphoto2 --get-config=")+cmd+std::string(" > buff")).c_str());
+        std::vector<std::string> gc;
+
+        std::fstream If("buff",std::ios::in);
+
+        std::string buffer;
+
+        while(std::getline(If,buffer))
+        {
+
+            std::stringstream ss_buffer;
+            ss_buffer << buffer;
+            ss_buffer >> buffer;
+
+            if(buffer=="Choice:")
+            {
+                ss_buffer >> buffer >> buffer;
+
+                gc.push_back(buffer);
+            }
+        }
+
+        std::remove("buff");
+
+        return gc;
+    }
+    void set_config(std::string const & cmd)
+    {
+        this->free_cmd("gphoto2 --set-config="+cmd);
+    }
 private:
     void free_cmd(std::string const & cmd)
     {
         system(std::string(cmd+std::string(!this->debug_mode?" > free_cmd":"")).c_str());
 
-        if(!this->debug_mode)
-            std::remove("free_cmd");
+
+        std::remove("free_cmd");
     }
 
 };

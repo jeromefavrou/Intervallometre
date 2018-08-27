@@ -29,7 +29,6 @@ int main(int argc,char ** argv)
         return -1;
     }
 
-
     std::cout << inter.size() <<" instructions chargées" << std::endl;
 
     inter.run_seq(apn);
