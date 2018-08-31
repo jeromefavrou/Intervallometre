@@ -138,6 +138,11 @@ public:
         return "";
     }
 
+    void help(void)
+    {
+
+    }
+
 private:
 
     void free_cmd(std::string const & cmd)

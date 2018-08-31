@@ -121,7 +121,6 @@ public:
                 {
                     std::cout <<std::endl<< "frame "<<i+1<<"/"<<seq.frame<<std:: endl;
 
-
                     if(apn.check_apn())
                     {
                         std::cout <<"ne pas débrancher apn capture en cour iso: " << seq.iso << " exposition: "<<seq.exposure<<" ouverture: " <<seq.aperture <<std::endl;
@@ -232,6 +231,12 @@ public:
 
         return check;
     }
+
+    void help(void)
+    {
+
+    }
+
 private:
     Sequance interpreter(std::stringstream  & ss_buffer)
     {
@@ -253,34 +258,20 @@ private:
         {
             ss_buffer >> cmd;
 
-            if(cmd=="LOC")
-                seq.user_local=true;
-            else if(cmd=="GP2")
-                seq.user_local=false;
-            else if(cmd=="WAIT")
-                seq.wait=true;
-            else if(cmd=="DELAY")
-                ss_buffer >> seq.delay;
-            else if(cmd=="FRAME")
-                ss_buffer >> seq.frame;
-            else if(cmd=="INTER")
-                ss_buffer >> seq.intervalle;
-            else if(cmd=="ISO")
-                ss_buffer >> seq.iso;
-            else if(cmd=="EXPO")
-                ss_buffer >> seq.exposure;
-            else if(cmd=="APER")
-                ss_buffer >> seq.aperture;
-            else if(cmd=="TARGET")
-                ss_buffer >> seq.target;
-            else if(cmd=="FORMAT")
-                ss_buffer >> seq.format;
-            else if(cmd=="SHUTTER")
-                ss_buffer >> seq.shutter;
-            else if(cmd=="EFFECT")
-                ss_buffer >> seq.effect;
-            else if(cmd=="WB")
-                ss_buffer >> seq.wb;
+            if(cmd=="LOC") seq.user_local=true;
+            else if(cmd=="GP2") seq.user_local=false;
+            else if(cmd=="WAIT") seq.wait=true;
+            else if(cmd=="DELAY") ss_buffer >> seq.delay;
+            else if(cmd=="FRAME") ss_buffer >> seq.frame;
+            else if(cmd=="INTER") ss_buffer >> seq.intervalle;
+            else if(cmd=="ISO") ss_buffer >> seq.iso;
+            else if(cmd=="EXPO") ss_buffer >> seq.exposure;
+            else if(cmd=="APER") ss_buffer >> seq.aperture;
+            else if(cmd=="TARGET") ss_buffer >> seq.target;
+            else if(cmd=="FORMAT") ss_buffer >> seq.format;
+            else if(cmd=="SHUTTER") ss_buffer >> seq.shutter;
+            else if(cmd=="EFFECT") ss_buffer >> seq.effect;
+            else if(cmd=="WB") ss_buffer >> seq.wb;
         }
 
         return seq;

@@ -1,6 +1,5 @@
 #include "Intervallometre.hpp"
 
-
 int main(int argc,char ** argv)
 {
     Intervallometre inter;
@@ -34,6 +33,17 @@ int main(int argc,char ** argv)
     {
         std::cerr << "des erreurs ont été trouvées dans la séquance --debug-mode pour détails" << std::endl;
         return -1;
+    }
+
+    if(argc>=2)
+    {
+        if(std::string(argv[1])=="--help"||std::string(argv[1])=="-h")
+        {
+            apn.help();
+            inter.help();
+
+            return 0;
+        }
     }
 
     std::cout << inter.size() <<" instructions chargées" << std::endl<<std::endl;
