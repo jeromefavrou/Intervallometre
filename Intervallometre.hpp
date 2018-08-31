@@ -7,6 +7,7 @@
 #include <sstream>
 #include <chrono>
 #include <thread>
+#include <algorithm>
 
 #include "Remote_controle_apn.hpp"
 
@@ -23,11 +24,12 @@ public:
         int frame;
         int intervalle;
         int delay;
-        int iso;
+        std::string iso;
         int exposure;
-        int aperture;
-        int target;
-        int format;
+        std::string aperture;
+        /*std::string target;
+        std::string format;*/
+        std::string shutter;
     };
 
     Intervallometre(void)
@@ -121,30 +123,80 @@ public:
                     if(apn.check_apn())
                     {
                         std::cout <<"ne pas débrancher apn capture en cour" <<std::endl;
-                        apn.capture(seq.iso,seq.exposure,seq.aperture,seq.target,seq.format);
+                        apn.capture_new_model(seq.iso,seq.exposure,seq.aperture,"1","9");
                     }
                     else
                     {
                         std::cout << "capture annulée aucun apn detecté" << std::endl;
                     }
-
                 }
             }
-
         }
     }
+
     size_t size(void)const noexcept
     {
         return this->m_seq.size();
     }
 
+    bool check_sequance(RC_Apn & apn)
+    {
+        bool check(true);
+        int line(0);
+        for(auto & i: this->m_seq)
+        {
+            line++;
 
+            std::stringstream ss_buff;
+            std::string val;
+
+            if(i.aperture!="-1")
+            {
+                ss_buff <<i.aperture;
+                ss_buff >>val;
+                if(check)
+                    check=this->check_cmd(apn,RC_Apn::Parameter::APERTURE,line,val);
+                else
+                    this->check_cmd(apn,RC_Apn::Parameter::APERTURE,line,val);
+            }
+
+            if(i.shutter!="-1")
+            {
+                ss_buff.clear();
+                ss_buff <<i.shutter;
+                ss_buff >>val;
+                if(check)
+                    check=this->check_cmd(apn,RC_Apn::Parameter::SHUTTERSPEED,line,val);
+                else
+                    this->check_cmd(apn,RC_Apn::Parameter::SHUTTERSPEED,line,val);
+            }
+
+
+            if(i.iso!="-1")
+            {
+                ss_buff.clear();
+                ss_buff <<i.iso;
+                ss_buff >>val;
+                if(check)
+                    check=this->check_cmd(apn,RC_Apn::Parameter::ISO,line,val);
+                else
+                    this->check_cmd(apn,RC_Apn::Parameter::ISO,line,val);
+            }
+
+        }
+
+        return check;
+    }
 private:
     Sequance interpreter(std::stringstream  & ss_buffer)
     {
         Sequance seq;
         seq.wait=false;
-        seq.delay=0;
+        seq.delay=-1;
+        seq.iso="-1";
+        seq.aperture="-1";
+        seq.exposure=-1;
+        seq.shutter="-1";
 
         std::string cmd;
 
@@ -170,15 +222,34 @@ private:
                 ss_buffer >> seq.exposure;
             else if(cmd=="APER")
                 ss_buffer >> seq.aperture;
-            else if(cmd=="TARGET")
+            /*else if(cmd=="TARGET")
                 ss_buffer >> seq.target;
             else if(cmd=="FORMAT")
-                ss_buffer >> seq.format;
+                ss_buffer >> seq.format;*/
+            else if(cmd=="SHUTTER")
+                ss_buffer >> seq.shutter;
         }
 
         return seq;
     }
 
+    bool check_cmd(RC_Apn & apn,RC_Apn::Parameter const & param,int line,std::string value)
+    {
+        auto v= apn.get_parameter(param);
+
+        auto res= std::find(v.begin(),v.end(),value);
+
+        if(res == v.end())
+        {
+            std::cerr << "ligne " << line << " erreur pour " << RC_Apn::parameter_to_string(param) <<" "<<value<<" non pris en charge"<<std::endl;
+
+            return false;
+        }
+        else if(this->debug_mode)
+            std::cout << "commande checker avec succes" <<std::endl;
+
+        return true;
+    }
     std::vector<Sequance> m_seq;
 };
 
