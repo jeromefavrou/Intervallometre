@@ -11,7 +11,7 @@ public:
 
     bool debug_mode;
 
-    enum Parameter{ APERTURE, ISO , SHUTTERSPEED , FORMAT , TARGET , WHITE_BALANCE};
+    enum Parameter{ APERTURE=1, ISO , SHUTTERSPEED , FORMAT , TARGET , WHITE_BALANCE , PICTURE_STYLE};
 
     RC_Apn(void)
     {
@@ -27,6 +27,7 @@ public:
         this->m_format=this->get_config(RC_Apn::Parameter::FORMAT);
         this->m_target=this->get_config(RC_Apn::Parameter::TARGET);
         this->m_wb=this->get_config(RC_Apn::Parameter::WHITE_BALANCE);
+        this->m_effect=this->get_config(RC_Apn::Parameter::PICTURE_STYLE);
     }
 
     bool check_apn(void)
@@ -51,9 +52,22 @@ public:
         return (nb_line>2?true:false);
     }
 
-    void capture_new_model(std::string iso,int exposure,std::string aperture,std::string target,std::string format)
+    void capture_new_EOS_DSLR(std::string inter,std::string iso,std::string exposure,std::string aperture,std::string target,std::string format, std::string shutter,std::string wb,std::string effect)
     {
+        system("gphoto2 --set-config capture=on");
 
+        this->set_config(RC_Apn::Parameter::TARGET,target);
+        this->set_config(RC_Apn::Parameter::FORMAT,format);
+        this->set_config(RC_Apn::Parameter::APERTURE,aperture);
+        this->set_config(RC_Apn::Parameter::ISO,iso);
+
+        this->set_config(RC_Apn::Parameter::SHUTTERSPEED,shutter);
+        this->set_config(RC_Apn::Parameter::WHITE_BALANCE,wb);
+        this->set_config(RC_Apn::Parameter::PICTURE_STYLE,effect);
+
+        std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(500));
+
+        this->free_cmd("gphoto2 --set-config eosremoterelease=5 --wait-event=2s --set-config eosremoterelease=0 --wait-event="+exposure+"s");
     }
 
     std::vector<std::string> get_config(RC_Apn::Parameter const & param)
@@ -85,9 +99,9 @@ public:
         return gc;
     }
 
-    void set_config(RC_Apn::Parameter const & param)
+    void set_config(RC_Apn::Parameter const & param,std::string value)
     {
-        this->free_cmd("gphoto2 --set-config="+this->parameter_to_string(param));
+        this->free_cmd("gphoto2 --set-config "+this->parameter_to_string(param)+"="+value);
     }
 
     std::vector<std::string> & get_parameter(RC_Apn::Parameter const & param)
@@ -100,6 +114,7 @@ public:
             case RC_Apn::Parameter::FORMAT: return this->m_format; break;
             case RC_Apn::Parameter::TARGET: return this->m_target; break;
             case RC_Apn::Parameter::WHITE_BALANCE: return this->m_wb; break;
+            case RC_Apn::Parameter::PICTURE_STYLE: return this->m_effect; break;
 
             default : return this->m_void;
         }
@@ -116,6 +131,7 @@ public:
             case RC_Apn::Parameter::FORMAT: return "imageformat"; break;
             case RC_Apn::Parameter::TARGET: return "capturetarget"; break;
             case RC_Apn::Parameter::WHITE_BALANCE: return "whitebalance"; break;
+            case RC_Apn::Parameter::PICTURE_STYLE: return "picturestyle"; break;
 
             default : return "";
         }
@@ -137,6 +153,7 @@ private:
     std::vector<std::string> m_format;
     std::vector<std::string> m_target;
     std::vector<std::string> m_wb;
+    std::vector<std::string> m_effect;
     std::vector<std::string> m_void;
 };
 

@@ -7,8 +7,8 @@ int main(int argc,char ** argv)
     RC_Apn apn;
 
     //shunt
-    inter.debug_mode=true;
-    apn.debug_mode=true;
+    //inter.debug_mode=true;
+    //apn.debug_mode=true;
 
     if(argc>=2)
     {
@@ -30,12 +30,13 @@ int main(int argc,char ** argv)
         std::cerr << "aucune sequance détectée" << std::endl;
         return -1;
     }
-    else
+    else if(!inter.check_sequance(apn))
     {
-        inter.check_sequance(apn);
+        std::cerr << "des erreurs ont été trouvées dans la séquance --debug-mode pour détails" << std::endl;
+        return -1;
     }
 
-    std::cout << inter.size() <<" instructions chargées" << std::endl;
+    std::cout << inter.size() <<" instructions chargées" << std::endl<<std::endl;
 
     inter.run_seq(apn);
 
