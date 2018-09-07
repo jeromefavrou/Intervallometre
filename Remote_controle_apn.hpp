@@ -141,6 +141,34 @@ public:
     void help(void)
     {
 
+       /* a metre dans intervallometre
+       std::cout<< std::endl<< "parametres d'ouverture possible: " <<std::endl;
+        for(auto & m: this->m_aperture)
+            std::cout <<'\t'<< m << std::endl;
+
+        std::cout<< std::endl<< "parametres iso possible: " <<std::endl;
+        for(auto & m: this->m_iso)
+            std::cout <<'\t'<< m << std::endl;
+
+        std::cout<< std::endl<< "parametres mode d'exposition possible: " <<std::endl;
+        for(auto & m: this->m_shutterspeed)
+            std::cout <<'\t'<< m << std::endl;
+
+        std::cout<< std::endl<< "parametres de format possible: " <<std::endl;
+        for(auto & m: this->m_format)
+            std::cout <<'\t'<< m << std::endl;
+
+        std::cout<< std::endl<< "parametres d'effet possible: " <<std::endl;
+        for(auto & m: this->m_effect)
+            std::cout <<'\t'<< m << std::endl;
+
+        std::cout<< std::endl<< "parametres de cible possible: " <<std::endl;
+        for(auto & m: this->m_target)
+            std::cout <<'\t'<< m << std::endl;
+
+        std::cout<< std::endl<< "parametres de balance des blancs possible: " <<std::endl;
+        for(auto & m: this->m_wb)
+            std::cout <<'\t'<< m << std::endl;*/
     }
 
 private:
