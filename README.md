@@ -12,13 +12,13 @@
 * installation manuel linux_64 (ex pour ubuntu): (peut prendre un certains temps)
 ----------------------
 1. sudo apt-get update
-2. sudo apt-get install gphoto2 libgphoto2* git cmake
+2. sudo apt-get install gphoto2 libgphoto2* git cmake python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev build-essential
 3. cd /opt
 4. sudo git clone https://github.com/opencv/opencv.git
 5. cd opencv
 6. mkdir build
 7. cd build
-8. sudo cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local ..
+8. sudo cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D BUILD_EXAMPLES=ON -D WITH_QT=ON -D WITH_OPENGL=ON
 9. sudo make
 10. sudo make install
 11. sudo apt-get autoremove
