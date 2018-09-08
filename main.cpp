@@ -11,8 +11,31 @@ int main(int argc,char ** argv)
 
     if(argc>=2)
     {
-        inter.debug_mode=(std::string(argv[1])=="--debug-mode"||std::string(argv[1])=="-D"?true:false);
-        apn.debug_mode=(std::string(argv[1])=="--debug-mode"||std::string(argv[1])=="-D"?true:false);
+        inter.debug_mode=(std::string(argv[1])=="--debug-mode"||std::string(argv[1])=="-d"?true:false);
+        apn.debug_mode=(std::string(argv[1])=="--debug-mode"||std::string(argv[1])=="-d"?true:false);
+
+        if(std::string(argv[1])=="--version"||std::string(argv[1])=="-v")
+        {
+            std::cout <<"Intervallometre version = 0.0.0"<<std::endl;
+            system("gphoto2 -v");
+
+            return 0;
+        }
+
+        if(std::string(argv[1])=="--upgrade"||std::string(argv[1])=="-u")
+        {
+            system("sudo apt-get update");
+            system("sudo apt-get install gphoto2 libgphoto2*");
+
+            return 0;
+        }
+
+        if(std::string(argv[1])=="--help"||std::string(argv[1])=="-h")
+        {
+            //lister en plus les commande possible // lire fichier help redefinit
+
+            return 0;
+        }
     }
 
     if(!apn.check_apn())
@@ -34,17 +57,16 @@ int main(int argc,char ** argv)
         std::cerr << "des erreurs ont été trouvées dans la séquance --debug-mode pour détails" << std::endl;
         return -1;
     }
-
-    if(argc>=2)
+    else if(argc>=2)
     {
-        if(std::string(argv[1])=="--help"||std::string(argv[1])=="-h")
+        if(std::string(argv[1])=="--list-conf"||std::string(argv[1])=="-l")
         {
-            apn.help();
-            inter.help();
+            //lister en plus les commande possible // lire fichier help redefinit
 
             return 0;
         }
     }
+
 
     std::cout << inter.size() <<" instructions chargées" << std::endl<<std::endl;
 

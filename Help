@@ -1,0 +1,11 @@
+./Intervallometre [arg]
+[arg] -h
+[arg] --help //renvoie les commandes possible ainsi que les caracteristiques de pogramation apn
+[arg] -d
+[arg] --debug-mode //execute l'intervallometre en debugage
+[arg] -v
+[arg] --version //affcihe les version de Intervallometre, et des libs associer
+[arg] -u
+[arg] --upgrade //met a jour les libs
+[arg] -l
+[arg] --list-conf //affiche tout les configue parametre dans la sequance pour l'apn present
