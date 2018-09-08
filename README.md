@@ -1,7 +1,7 @@
 
 # Intervallometre
 -----------------
-* installation automatique : 
+* installation automatique linux_64 (ex pour ubuntu):
 -----------------
 1. chmod +x ./install.linux64
 2. sudo ./install.linux64 (peut prendre un certains temps)
@@ -9,7 +9,7 @@
 4. ./Intervallometre
 
 ----------------------
-* installation manuel: (peut prendre un certains temps)
+* installation manuel linux_64 (ex pour ubuntu): (peut prendre un certains temps)
 ----------------------
 1. sudo apt-get update
 2. sudo apt-get install gphoto2 libgphoto2* git cmake
