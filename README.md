@@ -24,3 +24,6 @@
 11. sudo apt-get autoremove
 12. sudo apt-get autoclean
 13. sudo rm -r /opt/opencv
+...
+14. chmod +x ./Intervallometre
+15. ./Intervallometre
