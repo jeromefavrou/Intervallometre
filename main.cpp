@@ -5,10 +5,6 @@ int main(int argc,char ** argv)
     Intervallometre inter;
     RC_Apn apn;
 
-    //shunt
-    //inter.debug_mode=true;
-    //apn.debug_mode=true;
-
     if(argc>=2)
     {
         inter.debug_mode=(std::string(argv[1])=="--debug-mode"||std::string(argv[1])=="-d"?true:false);
@@ -32,9 +28,24 @@ int main(int argc,char ** argv)
 
         if(std::string(argv[1])=="--help"||std::string(argv[1])=="-h")
         {
-            //lister en plus les commande possible // lire fichier help redefinit
+            system("firefox https://github.com/jeromefavrou/Intervallometre/wiki");
+
+            std::fstream If("Help",std::ios::in);
+
+            if(!If)
+                std::cout << "aide introuvable" <<std::endl;
+            else
+            {
+                std::string line_h("");
+                while(std::getline(If,line_h))
+                    std::cout << line_h << std::endl;
+            }
 
             return 0;
+        }
+        if(std::string(argv[1])=="--old-apn"||std::string(argv[1])=="-o")
+        {
+            apn.older=true;
         }
     }
 
@@ -47,7 +58,7 @@ int main(int argc,char ** argv)
 
     apn.init_parameter();
 
-    if(!inter.load("Sequance_1"))
+    if(!inter.load("Sequance_2"))
     {
         std::cerr << "aucune sequance détectée" << std::endl;
         return -1;
@@ -56,15 +67,6 @@ int main(int argc,char ** argv)
     {
         std::cerr << "des erreurs ont été trouvées dans la séquance --debug-mode pour détails" << std::endl;
         return -1;
-    }
-    else if(argc>=2)
-    {
-        if(std::string(argv[1])=="--list-conf"||std::string(argv[1])=="-l")
-        {
-            //lister en plus les commande possible // lire fichier help redefinit
-
-            return 0;
-        }
     }
 
 

@@ -14,11 +14,14 @@
 class Intervallometre
 {
 public:
+    ///defini si mode debug activé
     bool debug_mode;
 
+    ///defini les parametre d'une sequance
     struct Sequance
     {
-        bool user_local:1;
+
+        bool user_local:1; //si la commande vien du programe ou concerne gphoto2
         bool wait:1;
 
         int frame;
@@ -35,11 +38,17 @@ public:
 
     };
 
+///-------------------------------------------------------------
+///initialisation aux valeurs par defaut
+///-------------------------------------------------------------
     Intervallometre(void)
     {
         this->debug_mode=false;
     }
 
+///-------------------------------------------------------------
+///charge la sequance
+///-------------------------------------------------------------
     bool load(std::string const & file) noexcept
     {
         std::fstream If;
@@ -58,12 +67,12 @@ public:
             {
                 if(instruction.size()>2)
                 {
-                    if(instruction[0]=='/'&&instruction[1]=='/')
+                    if(instruction[0]=='/'&&instruction[1]=='/')//ignore une ligne de sequance mais affiche au terminal celle ci
                     {
                         std::cout << instruction <<std::endl;
                         continue;
                     }
-                    if(instruction[0]=='#')
+                    if(instruction[0]=='#')//ignore une ligne de sequance
                         continue;
                 }
 
@@ -71,11 +80,13 @@ public:
 
                 ss_buf << instruction;
 
+                //on vien interpreter le reste de la sequance
                 this->m_seq.push_back(this->interpreter(ss_buf));
             }
 
             return true;
         }
+        //gestion des erreur
         catch(std::string const & error)
         {
             if(this->debug_mode)
@@ -94,22 +105,26 @@ public:
         return false;
     }
 
+///-------------------------------------------------------------
+///execute la sequance
+///-------------------------------------------------------------
     void run_seq(RC_Apn & apn)
     {
         if(this->debug_mode)
             std::cout << " La sequance commance" <<std::endl<<std::endl;
+
         for(auto & seq:this->m_seq)
         {
             if(seq.user_local)
             {
-                if(seq.wait)
+                if(seq.wait) //attente d'un appuis ur touche
                 {
                     std::cin.clear();
                     std::cout <<std::endl << "Appuis sur Enter requis" << std::endl<< std::endl;
                     std::cin.get();
                 }
 
-                if(seq.delay>0)
+                if(seq.delay>0) // attente d'un delais
                 {
                     std::cout<<std::endl << "Attendre " << seq.delay <<" s"<<std::endl<<std::endl;
                     std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(seq.delay*1000));
@@ -117,11 +132,11 @@ public:
             }
             else
             {
-                for(auto i=0;i<seq.frame;i++)
+                for(auto i=0;i<seq.frame;i++)//execute n fois une instruction grace au parametre frame
                 {
                     std::cout <<std::endl<< "frame "<<i+1<<"/"<<seq.frame<<std:: endl;
 
-                    if(apn.check_apn())
+                    if(apn.check_apn())//on verifie la presance apn a chaque capture
                     {
                         std::cout <<"ne pas débrancher apn capture en cour iso: " << seq.iso << " exposition: "<<seq.exposure<<" ouverture: " <<seq.aperture <<std::endl;
 
@@ -136,7 +151,8 @@ public:
                         std::string inter;
                         ss_t >>inter;
 
-                        apn.capture_new_EOS_DSLR(inter,seq.iso,expo,seq.aperture,"1","9","bulb","0","4");
+                        //capture et enregistrements
+                        apn.capture_and_download_EOS_DSLR(inter,seq.iso,expo,seq.aperture,"1","9","bulb","0","4","capture");
                     }
                     else
                     {
@@ -147,22 +163,30 @@ public:
         }
     }
 
+///-------------------------------------------------------------
+///taille de sequance
+///-------------------------------------------------------------
     size_t size(void)const noexcept
     {
         return this->m_seq.size();
     }
 
+///-------------------------------------------------------------
+///verifie si la sequance possede des erreur
+///-------------------------------------------------------------
     bool check_sequance(RC_Apn & apn)
     {
         bool check(true);
         int line(0);
         for(auto & i: this->m_seq)
         {
+            //on determine la ligne en cause
             line++;
 
             std::stringstream ss_buff;
             std::string val;
 
+            //on verifie les parametre d'ouveture
             if(i.aperture!="-1")
             {
                 ss_buff <<i.aperture;
@@ -173,6 +197,7 @@ public:
                     this->check_cmd(apn,RC_Apn::Parameter::APERTURE,line,val);
             }
 
+            //on verifie les parametre du shutterspeed
             if(i.shutter!="-1")
             {
                 ss_buff.clear();
@@ -183,7 +208,7 @@ public:
                 else
                     this->check_cmd(apn,RC_Apn::Parameter::SHUTTERSPEED,line,val);
             }
-
+            //on verifie les balance de blanc
             if(i.wb!="-1")
             {
                 ss_buff.clear();
@@ -194,7 +219,7 @@ public:
                 else
                     this->check_cmd(apn,RC_Apn::Parameter::WHITE_BALANCE,line,val);
             }
-
+            //on verifie les effect appliquer
             if(i.effect!="-1")
             {
                 ss_buff.clear();
@@ -205,8 +230,7 @@ public:
                 else
                     this->check_cmd(apn,RC_Apn::Parameter::PICTURE_STYLE,line,val);
             }
-
-
+            //on verifie les iso
             if(i.iso!="-1")
             {
                 ss_buff.clear();
@@ -218,6 +242,7 @@ public:
                     this->check_cmd(apn,RC_Apn::Parameter::ISO,line,val);
             }
 
+            //on verifie le delay, frame et intervalle
             if(i.delay<=0 && i.delay!=-1)
                 std::cerr << "ligne " << line << " erreur pour wait"<<i.delay<<" non pris en charge (<=0)"<<std::endl;
 
@@ -228,18 +253,18 @@ public:
                 std::cerr << "ligne " << line << " erreur pour wait"<<i.delay<<" non pris en charge (< 1)"<<std::endl;
 
         }
-
+        //true si pas d'erreur
         return check;
     }
 
-    void help(void)
-    {
-
-    }
-
 private:
+
+///-------------------------------------------------------------
+///on interprete chaque instruction
+///-------------------------------------------------------------
     Sequance interpreter(std::stringstream  & ss_buffer)
     {
+        //on initialise npar defaut a false ou -1
         Sequance seq;
         seq.wait=false;
         seq.delay=-1;
@@ -254,6 +279,7 @@ private:
 
         std::string cmd;
 
+        //on interprete la sequance et les parametre associer
         while(ss_buffer)
         {
             ss_buffer >> cmd;
@@ -277,6 +303,9 @@ private:
         return seq;
     }
 
+///-------------------------------------------------------------
+///verifie si les instruction sont erroné
+///-------------------------------------------------------------
     bool check_cmd(RC_Apn & apn,RC_Apn::Parameter const & param,int line,std::string value)
     {
         auto v= apn.get_parameter(param);
@@ -285,6 +314,7 @@ private:
 
         if(res == v.end())
         {
+            //informe sur l'erreur
             std::cerr << "ligne " << line << " erreur pour " << RC_Apn::parameter_to_string(param) <<" "<<value<<" non pris en charge"<<std::endl;
 
             return false;
