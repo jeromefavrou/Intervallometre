@@ -1,5 +1,5 @@
 #include "Intervallometre.hpp"
-
+#include "gnu.hpp"
 int main(int argc,char ** argv)
 {
     Intervallometre inter;
