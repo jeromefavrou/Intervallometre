@@ -25,5 +25,12 @@
 12. cd ..
 13. cd ..
 14. sudo rm -r opencv
-15. chmod +x ./Intervallometre
-16. ./Intervallometre
+15. sudo git clone https://github.com/LibRaw/LibRaw.git
+16. cd LibRaw
+17. ./configure
+18. make
+19. sudo make install
+20. cd ..
+21. sudo rm -r LibRaw
+22. chmod +x ./Intervallometre
+23. ./Intervallometre
