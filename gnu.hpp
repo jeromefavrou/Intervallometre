@@ -1,6 +1,7 @@
 #ifndef GNU_HPP_INCLUDED
 #define GNU_HPP_INCLUDED
 
+#include <opencv2/highgui/highgui_c.h>
 #include "raw_import.hpp"
 
 class GNU
@@ -12,9 +13,17 @@ class GNU
 
      void display(void)
      {
-        cv::namedWindow(m_name_red_windows);
-        cv::namedWindow(m_name_blue_windows);
-        cv::namedWindow(m_name_green_windows);
+         //test
+        RAW image("test.CR2");
+        image.load();
+
+        cv::namedWindow(m_name_red_windows,CV_WINDOW_FREERATIO);
+        cv::namedWindow(m_name_blue_windows,CV_WINDOW_FREERATIO);
+        cv::namedWindow(m_name_green_windows,CV_WINDOW_FREERATIO);
+
+        cv::imshow( m_name_red_windows, image.data() );
+        cv::imshow( m_name_blue_windows, image.data() );
+        cv::imshow( m_name_green_windows, image.data() );
 
         cv::waitKey(0);
 
