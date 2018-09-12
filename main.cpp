@@ -1,7 +1,8 @@
 #include "Intervallometre.hpp"
-#include "gnu.hpp"
+
 int main(int argc,char ** argv)
 {
+    GNU Api;
     Intervallometre inter;
     RC_Apn apn;
 
@@ -73,6 +74,8 @@ int main(int argc,char ** argv)
     std::cout << inter.size() <<" instructions chargées" << std::endl<<std::endl;
 
     inter.run_seq(apn);
+
+    //Api.display();
 
     return 0;
 }

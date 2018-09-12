@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "Remote_controle_apn.hpp"
+#include "gnu.hpp"
 
 class Intervallometre
 {
