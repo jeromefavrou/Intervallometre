@@ -10,6 +10,7 @@ int main(int argc,char ** argv)
     {
         inter.debug_mode=(std::string(argv[1])=="--debug-mode"||std::string(argv[1])=="-d"?true:false);
         apn.debug_mode=(std::string(argv[1])=="--debug-mode"||std::string(argv[1])=="-d"?true:false);
+        apn.download_and_remove=(std::string(argv[1])=="--download_and_remove"||std::string(argv[1])=="-f"?true:false);
 
         if(std::string(argv[1])=="--version"||std::string(argv[1])=="-v")
         {
@@ -70,12 +71,13 @@ int main(int argc,char ** argv)
         return -1;
     }
 
-
     std::cout << inter.size() <<" instructions chargées" << std::endl<<std::endl;
 
-    inter.run_seq(apn);
+    std::string last_capt;
 
-    //Api.display();
+    inter.run_seq(apn,last_capt);
+
+    Api.display(last_capt);
 
     return 0;
 }

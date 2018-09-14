@@ -109,7 +109,7 @@ public:
 ///-------------------------------------------------------------
 ///execute la sequance
 ///-------------------------------------------------------------
-    void run_seq(RC_Apn & apn)
+    void run_seq(RC_Apn & apn,std::string & last_capt)
     {
         if(this->debug_mode)
             std::cout << " La sequance commance" <<std::endl<<std::endl;
@@ -152,8 +152,27 @@ public:
                         std::string inter;
                         ss_t >>inter;
 
-                        //capture et enregistrements
-                        apn.capture_and_download_EOS_DSLR(inter,seq.iso,expo,seq.aperture,"1","9","bulb","0","4","capture");
+                        //capture
+                        apn.capture_EOS_DSLR(inter,seq.iso,expo,seq.aperture,"1","9","bulb","0","4");
+
+                        auto v=apn.get_parameter(RC_Apn::Parameter::FILE);
+                        apn.init_parameter();
+                        auto temp=apn.get_parameter(RC_Apn::Parameter::FILE);
+
+                        std::string new_capt("");
+                        for(auto i : temp)
+                        {
+                             auto res= std::find(v.begin(),v.end(),i);
+
+                             if(res == v.end())
+                             {
+                                 new_capt=i;
+                                 break;
+                             }
+                        }
+
+                        apn.download(new_capt,"capture");
+                        last_capt=new_capt;
                     }
                     else
                     {
