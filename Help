@@ -13,3 +13,5 @@
 [arg] --old-apn  //force l'utilisation des methodes gphoto2 pour ancien_apn
 [arg] -f
 [arg] --download-and-remove  //suprime les capture de l'apn apres telechargement
+[arg] -t
+[arg] --tcp-client  //permet la d'envoyer les instruction par protoc tcp-ip

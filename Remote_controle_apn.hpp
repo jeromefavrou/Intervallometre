@@ -12,6 +12,7 @@ public:
     ///defini si mode debug activé
     bool debug_mode;
     bool download_and_remove;
+    bool tcp_client;
     ///definit si mode de compatibilité avec ancien apn ctivé
     bool older;
 
@@ -24,6 +25,7 @@ public:
     RC_Apn(void)
     {
         this->debug_mode=false;
+        this->tcp_client=false;
         this->download_and_remove=false;
         this->older=false;
         this->m_void=std::vector<std::string>(0);

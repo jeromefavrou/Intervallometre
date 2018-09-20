@@ -11,11 +11,14 @@ int main(int argc,char ** argv)
         inter.debug_mode=(std::string(argv[1])=="--debug-mode"||std::string(argv[1])=="-d"?true:false);
         apn.debug_mode=(std::string(argv[1])=="--debug-mode"||std::string(argv[1])=="-d"?true:false);
         apn.download_and_remove=(std::string(argv[1])=="--download-and-remove"||std::string(argv[1])=="-f"?true:false);
+        apn.tcp_client=(std::string(argv[1])=="--tcp-client"||std::string(argv[1])=="-t"?true:false);
 
         if(std::string(argv[1])=="--version"||std::string(argv[1])=="-v")
         {
             std::cout <<"Intervallometre version = 0.0.0"<<std::endl;
             system("gphoto2 -v");
+
+            std::cout <<"Opencv version = "<< CV_MAJOR_VERSION<<"."<< CV_MINOR_VERSION <<std::endl;
 
             return 0;
         }
