@@ -33,4 +33,5 @@
 20. cd ..
 21. sudo rm -r LibRaw
 22. chmod +x ./Intervallometre
-23. ./Intervallometre
+23. sudo /sbin/ldconfig -v
+24. ./Intervallometre
