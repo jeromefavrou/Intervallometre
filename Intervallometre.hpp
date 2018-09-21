@@ -11,6 +11,7 @@
 
 #include "Remote_controle_apn.hpp"
 #include "gnu.hpp"
+#include "utility.hpp"
 
 class Intervallometre
 {
@@ -26,17 +27,20 @@ public:
         bool wait:1;
 
         int frame;
+        int exposure;
+
         float intervalle;
         float delay;
+
         std::string iso;
-        int exposure;
+        std::string type_raw;
+        std::string work_dir;
         std::string aperture;
         std::string target;
         std::string format;
         std::string shutter;
         std::string effect;
         std::string wb;
-
     };
 
 ///-------------------------------------------------------------
@@ -114,6 +118,8 @@ public:
         if(this->debug_mode)
             std::cout << " La sequance commance" <<std::endl<<std::endl;
 
+            std::string rep_directory("");
+
         for(auto & seq:this->m_seq)
         {
             if(seq.user_local)
@@ -130,12 +136,44 @@ public:
                     std::cout<<std::endl << "Attendre " << seq.delay <<" s"<<std::endl<<std::endl;
                     std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(seq.delay*1000));
                 }
+
+                if(seq.work_dir!="-1")
+                {
+                    bool d(false),o(false),f(false),l(false);
+                    for(auto & i : ls(seq.work_dir))
+                    {
+                        if(i=="dark")
+                            d=true;
+                        else if(i=="offset")
+                            o=true;
+                        else if(i=="flat")
+                            f=true;
+                        else if(i=="light")
+                            l=true;
+                    }
+
+                    if(!d)
+                        system(std::string("mkdir "+seq.work_dir+"/dark").c_str());
+                    if(!o)
+                        system(std::string("mkdir "+seq.work_dir+"/offset").c_str());
+                    if(!f)
+                        system(std::string("mkdir "+seq.work_dir+"/flat").c_str());
+                    if(!l)
+                        system(std::string("mkdir "+seq.work_dir+"/light").c_str());
+
+                    if(this->debug_mode)
+                        std::cout << "changement de repertoire de travail: "<<seq.work_dir<<std::endl;
+
+                    rep_directory=seq.work_dir;
+                }
+
+
             }
             else
             {
                 for(auto i=0;i<seq.frame;i++)//execute n fois une instruction grace au parametre frame
                 {
-                    std::cout <<std::endl<< "frame "<<i+1<<"/"<<seq.frame<<std:: endl;
+                    std::cout <<std::endl<< "frame "<<i+1<<"/"<<seq.frame<<std::endl;
 
                     if(apn.check_apn())//on verifie la presance apn a chaque capture
                     {
@@ -153,7 +191,7 @@ public:
                         ss_t >>inter;
 
                         //capture
-                        apn.capture_EOS_DSLR(inter,seq.iso,expo,seq.aperture,"1","9","bulb","0","4");
+                        apn.capture_EOS_DSLR(inter,seq.iso,expo,seq.aperture,"1","9",seq.shutter!="-1"?seq.shutter:"bulb","0","4");//parametre par defaut a changé
 
                         auto v=apn.get_parameter(RC_Apn::Parameter::FILE);
                         apn.init_parameter();
@@ -171,8 +209,8 @@ public:
                              }
                         }
 
-                        apn.download(new_capt,"capture");
-                        last_capt=new_capt;
+                        apn.download(new_capt,rep_directory+"/"+(seq.type_raw!="-1"?seq.type_raw:""));
+                        last_capt=(rep_directory+"/"+(seq.type_raw!="-1"?(seq.type_raw+"/"):""))+new_capt;
                     }
                     else
                     {
@@ -264,13 +302,45 @@ public:
 
             //on verifie le delay, frame et intervalle
             if(i.delay<=0 && i.delay!=-1)
-                std::cerr << "ligne " << line << " erreur pour wait"<<i.delay<<" non pris en charge (<=0)"<<std::endl;
+            {
+                std::cerr << "ligne " << line << " erreur pour wait "<<i.delay<<" non pris en charge (<=0)"<<std::endl;
+                check=false;
+            }
+
 
             if(i.frame<=0 && i.frame!=-1)
-                std::cerr << "ligne " << line << " erreur pour wait"<<i.delay<<" non pris en charge (<=0)"<<std::endl;
+            {
+                std::cerr << "ligne " << line << " erreur pour wait "<<i.delay<<" non pris en charge (<=0)"<<std::endl;
+                check=false;
+            }
+
 
             if(i.intervalle<1 && i.intervalle!=-1)
-                std::cerr << "ligne " << line << " erreur pour wait"<<i.delay<<" non pris en charge (< 1)"<<std::endl;
+            {
+                std::cerr << "ligne " << line << " erreur pour wait "<<i.delay<<" non pris en charge (< 1)"<<std::endl;
+                check=false;
+            }
+
+
+            if(i.type_raw != "dark" && i.type_raw != "flat" && i.type_raw != "offset" && i.type_raw != "light" && i.type_raw != "-1")
+            {
+                std::cerr << "ligne " << line << " erreur pour TYPE_RAW "<<i.type_raw<<" non pris en charge (!= dark || offset || flat || light)"<<std::endl;
+                check=false;
+            }
+
+
+            if(i.work_dir != "-1")
+            {
+                std::fstream Of(i.work_dir+"test_dir",std::ios::out);
+                if(!Of || Of.fail() || Of.bad())
+                {
+                    std::cerr << "ligne " << line << " erreur pour REP_DIRECTORY "<<i.work_dir<<" introuvable"<<std::endl;
+                    check=false;
+                }
+
+                else
+                    std::remove(std::string(i.work_dir+"test_dir").c_str());
+            }
 
         }
         //true si pas d'erreur
@@ -287,6 +357,8 @@ private:
         //on initialise npar defaut a false ou -1
         Sequance seq;
         seq.wait=false;
+        seq.type_raw="-1";
+        seq.work_dir="-1";
         seq.delay=-1;
         seq.frame=-1;
         seq.intervalle=-1;
@@ -318,6 +390,12 @@ private:
             else if(cmd=="SHUTTER") ss_buffer >> seq.shutter;
             else if(cmd=="EFFECT") ss_buffer >> seq.effect;
             else if(cmd=="WB") ss_buffer >> seq.wb;
+            else if(cmd=="WORK_DIRECTORY") ss_buffer >> seq.work_dir;
+            else if(cmd=="TYPE_RAW") ss_buffer >> seq.type_raw;
+            else
+            {
+                std::cout << "instruction: "<<cmd << "invalide donc ignoré" << std::endl;
+            }
         }
 
         return seq;

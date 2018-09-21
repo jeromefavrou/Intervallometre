@@ -94,8 +94,8 @@ public:
         this->set_config(RC_Apn::Parameter::WHITE_BALANCE,wb);
         this->set_config(RC_Apn::Parameter::PICTURE_STYLE,effect);
 
-        //attente de 0.5 s pour evité busy sur apn
-        std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(500));
+        //attente de 0.1 s pour evité busy sur apn
+        std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(100));
 
         //commande gphoto de capture pour new et old
         if(!this->older)
@@ -179,6 +179,8 @@ public:
         //deplacement dans le repertoire demandé
         if(where!="")
         {
+            if(this->debug_mode)
+                std::cout << "telechargement vers: "<<where<<std::endl;
             system(std::string("cp "+why+" "+where).c_str());
             system(std::string("rm "+why).c_str());
         }
@@ -201,7 +203,7 @@ public:
         system(std::string("gphoto2 --get-file="+fcast).c_str());
 
         if(this->download_and_remove)
-            system(std::string("gphoto2 --delete-file="+fcast).c_str());
+            system(std::string("gphoto2 -f 1 -d "+fcast).c_str());//preciser le -f en "/.../..."
     }
 
 ///-------------------------------------------------------------

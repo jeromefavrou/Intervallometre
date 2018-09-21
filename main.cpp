@@ -76,11 +76,18 @@ int main(int argc,char ** argv)
 
     std::cout << inter.size() <<" instructions chargées" << std::endl<<std::endl;
 
-    std::string last_capt;
+    std::string last_capt("void.CR2");
+
+
+    std::thread th(&GNU::display,&Api,std::ref(last_capt));
+
+    std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(1000));
 
     inter.run_seq(apn,last_capt);
 
-    Api.display(last_capt);
+    last_capt="exit";
+
+    th.join();
 
     return 0;
 }

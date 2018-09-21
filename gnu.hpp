@@ -12,29 +12,37 @@ class GNU
      {
      }
 
-     void display(std::string const & capt)
+     void display(std::string & capt)
      {
-        RAW image(capt);
-        image.load();
+        std::string t_capt("");
 
-        std::vector<cv::Mat> rgbChannels(3);
-        std::vector<cv::Mat> LabChannels(3);
+        while(capt!="exit")
+        {
+            RAW image(capt);
+            image.load();
 
-        cv::split(image.data(), rgbChannels);
+            std::vector<cv::Mat> rgbChannels(3);
+            std::vector<cv::Mat> LabChannels(3);
 
-        cv::namedWindow(m_name_red_windows,CV_WINDOW_FREERATIO);
-        cv::namedWindow(m_name_blue_windows,CV_WINDOW_FREERATIO);
-        cv::namedWindow(m_name_green_windows,CV_WINDOW_FREERATIO);
-        cv::namedWindow(m_name_full_windows,CV_WINDOW_FREERATIO);
+            cv::split(image.data(), rgbChannels);
+            cv::namedWindow(m_name_red_windows,CV_WINDOW_FREERATIO);
+            cv::namedWindow(m_name_blue_windows,CV_WINDOW_FREERATIO);
+            cv::namedWindow(m_name_green_windows,CV_WINDOW_FREERATIO);
+            cv::namedWindow(m_name_full_windows,CV_WINDOW_FREERATIO);
 
-        cv::imshow( m_name_red_windows, rgbChannels[2]);
-        cv::imshow( m_name_blue_windows, rgbChannels[0]);
-        cv::imshow( m_name_green_windows, rgbChannels[1]);
-        cv::imshow( m_name_full_windows, image.data());
+            cv::imshow( m_name_red_windows, rgbChannels[2]);
+            cv::imshow( m_name_blue_windows, rgbChannels[0]);
+            cv::imshow( m_name_green_windows, rgbChannels[1]);
+            cv::imshow( m_name_full_windows, image.data());
 
-        cv::waitKey(0);
+            while(capt==t_capt && capt!="exit")
+                cv::waitKey(3000);
 
-        cv::destroyAllWindows();
+            t_capt=capt;
+
+            cv::destroyAllWindows();
+        }
+
      }
 
  private:
