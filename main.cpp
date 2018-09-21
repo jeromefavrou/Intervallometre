@@ -66,6 +66,7 @@ int main(int argc,char ** argv)
     if(!inter.load("Sequance_2"))
     {
         std::cerr << "aucune sequance détectée" << std::endl;
+
         return -1;
     }
     else if(!inter.check_sequance(apn))
@@ -76,8 +77,7 @@ int main(int argc,char ** argv)
 
     std::cout << inter.size() <<" instructions chargées" << std::endl<<std::endl;
 
-    std::string last_capt("void.CR2");
-
+    std::string last_capt("");
 
     std::thread th(&GNU::display,&Api,std::ref(last_capt));
 

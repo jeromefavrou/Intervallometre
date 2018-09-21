@@ -15,6 +15,21 @@ class GNU
      void display(std::string & capt)
      {
         std::string t_capt("");
+        int luminosite(50),contraste(50);
+
+        cv::namedWindow(m_name_red_windows,CV_WINDOW_FREERATIO);
+        cv::namedWindow(m_name_blue_windows,CV_WINDOW_FREERATIO);
+        cv::namedWindow(m_name_green_windows,CV_WINDOW_FREERATIO);
+        cv::namedWindow(m_name_full_windows,CV_WINDOW_FREERATIO);
+
+        cv::resizeWindow(m_name_red_windows, 467, 350);
+        cv::resizeWindow(m_name_blue_windows, 467, 350);
+        cv::resizeWindow(m_name_green_windows, 467, 350);
+        cv::resizeWindow(m_name_full_windows, 640, 480);
+
+        cv::createTrackbar("luminosoté", m_name_full_windows,&luminosite,100);
+        cv::createTrackbar("contraste", m_name_full_windows,&contraste,100);
+
 
         while(capt!="exit")
         {
@@ -22,27 +37,29 @@ class GNU
             image.load();
 
             std::vector<cv::Mat> rgbChannels(3);
-            std::vector<cv::Mat> LabChannels(3);
-
-            cv::split(image.data(), rgbChannels);
-            cv::namedWindow(m_name_red_windows,CV_WINDOW_FREERATIO);
-            cv::namedWindow(m_name_blue_windows,CV_WINDOW_FREERATIO);
-            cv::namedWindow(m_name_green_windows,CV_WINDOW_FREERATIO);
-            cv::namedWindow(m_name_full_windows,CV_WINDOW_FREERATIO);
-
-            cv::imshow( m_name_red_windows, rgbChannels[2]);
-            cv::imshow( m_name_blue_windows, rgbChannels[0]);
-            cv::imshow( m_name_green_windows, rgbChannels[1]);
-            cv::imshow( m_name_full_windows, image.data());
 
             while(capt==t_capt && capt!="exit")
-                cv::waitKey(3000);
+            {
+                cv::Mat dst;
+
+                image.data().convertTo(dst, -1, static_cast<float>(contraste)/50, static_cast<float>(luminosite)/10-5);
+
+                cv::split(dst, rgbChannels);
+
+                cv::imshow( m_name_red_windows, rgbChannels[2]);
+                cv::imshow( m_name_blue_windows, rgbChannels[0]);
+                cv::imshow( m_name_green_windows, rgbChannels[1]);
+                cv::imshow( m_name_full_windows, dst);
+
+                cv::waitKey(1000);//10s
+            }
+
 
             t_capt=capt;
 
-            cv::destroyAllWindows();
         }
 
+        cv::destroyAllWindows();
      }
 
  private:

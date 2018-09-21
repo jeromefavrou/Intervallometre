@@ -11,16 +11,18 @@ public:
 
     ///defini si mode debug activé
     bool debug_mode;
+    ///coupe coller
     bool download_and_remove;
+    ///passage des instruction a un serveur
     bool tcp_client;
-    ///definit si mode de compatibilité avec ancien apn ctivé
+    ///definit si mode de compatibilité avec ancien apn activé
     bool older;
 
     ///definition des parametre apn utile
     enum Parameter{ APERTURE=1, ISO , SHUTTERSPEED , FORMAT , TARGET , WHITE_BALANCE , PICTURE_STYLE, FILE};
 
 ///-------------------------------------------------------------
-///initialisation au valeur par defaut
+///initialisation aux valeurs par defaut
 ///-------------------------------------------------------------
     RC_Apn(void)
     {

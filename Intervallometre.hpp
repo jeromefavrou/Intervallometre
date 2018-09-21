@@ -124,7 +124,7 @@ public:
         {
             if(seq.user_local)
             {
-                if(seq.wait) //attente d'un appuis ur touche
+                if(seq.wait) //attente d'un appuis sur touche
                 {
                     std::cin.clear();
                     std::cout <<std::endl << "Appuis sur Enter requis" << std::endl<< std::endl;
@@ -137,9 +137,11 @@ public:
                     std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(seq.delay*1000));
                 }
 
-                if(seq.work_dir!="-1")
+                if(seq.work_dir!="-1") // gere le repertoire de travaille
                 {
                     bool d(false),o(false),f(false),l(false);
+
+                    //on regarde si les dossier dof sont présent et on les cree sinon
                     for(auto & i : ls(seq.work_dir))
                     {
                         if(i=="dark")
@@ -183,7 +185,6 @@ public:
                         ss_t << seq.exposure-1;
                         std::string expo;
                         ss_t >>expo;
-
 
                         ss_t.clear();
                         ss_t << seq.intervalle;

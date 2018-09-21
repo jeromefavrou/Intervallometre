@@ -10,6 +10,9 @@
 class RAW
 {
 public:
+///-------------------------------------------------------------
+///initialisation valeur
+///-------------------------------------------------------------
     RAW(void):m_file(""),m_data(nullptr)
     {
     }
@@ -22,10 +25,16 @@ public:
     {
     }
 
+///-------------------------------------------------------------
+///constructeur de copie (poiteur partager sur data)
+///-------------------------------------------------------------
     RAW(RAW const & cpy):m_file(cpy.get_file()),m_data(std::make_shared<cv::Mat>(cpy.get_data()))
     {
     }
 
+///-------------------------------------------------------------
+///operateur de copie (poiteur partager sur data)
+///-------------------------------------------------------------
     RAW operator=(RAW const & cpy)
     {
         this->m_file=cpy.get_file();
@@ -33,33 +42,48 @@ public:
 
         return *this;
     }
-
+///-------------------------------------------------------------
+///renvoie le chemin de l'image
+///-------------------------------------------------------------
     std::string get_file(void) const
     {
         return this->m_file;
     }
 
+///-------------------------------------------------------------
+///renvoie les données image const
+///-------------------------------------------------------------
     cv::Mat get_data(void)const
     {
         return *this->m_data;
     }
 
+///-------------------------------------------------------------
+///renvoie les données image referencer
+///-------------------------------------------------------------
     cv::Mat & data(void)
     {
         return *this->m_data;
     }
 
+///-------------------------------------------------------------
+///renvoie le pointeur des données image
+///-------------------------------------------------------------
     std::shared_ptr<cv::Mat> get_data(void)
     {
         return this->m_data;
     }
 
-
+///-------------------------------------------------------------
+///import les image brut au format d'opencv2
+///-------------------------------------------------------------
     bool load(void)
     {
         try
         {
             LibRaw lrProc;
+
+            ///gestion des erreur de libraw
             if( LIBRAW_SUCCESS != lrProc.open_file( this->m_file.c_str()) )
                 throw std::string("brute introuvable: "+this->m_file);
             if( LIBRAW_SUCCESS != lrProc.unpack())
@@ -67,9 +91,11 @@ public:
             if( LIBRAW_SUCCESS != lrProc.raw2image() )
                 throw std::string("brute impoossible a convertire en data: "+this->m_file);
 
+            ///taille de l'image
             int width = lrProc.imgdata.sizes.iwidth;
             int height = lrProc.imgdata.sizes.iheight;
 
+            ///interpollation de la matrice de bayer
             std::vector<ushort> vBayerData;
             for ( int y = 0; y < height; y++ )
             {
@@ -92,6 +118,8 @@ public:
                 }
             }
 
+            ///convertion au format bgr d'opencv2 avec ajustement gamma
+
             lrProc.recycle();
             cv::Mat imgBayer( height, width, CV_16UC1, vBayerData.data() );
 
@@ -109,14 +137,24 @@ public:
         catch(std::string const & e)
         {
             std::cerr << e <<std::endl;
+
+            ///image vide si erreur
+            this->m_data=std::make_shared<cv::Mat>(cv::Mat::zeros(10, 10,  CV_32FC3));
+
             return false;
         }
         catch(std::exception const & e)
         {
             std::cerr << e.what() <<std::endl;
+
+            ///image vide si erreur
+            this->m_data=std::make_shared<cv::Mat>(cv::Mat::zeros(10, 10,  CV_32FC3));
+
             return false;
         }
 
+        ///image vide si erreur
+        this->m_data=std::make_shared<cv::Mat>(cv::Mat::zeros(10, 10,  CV_32FC3));
         return false;
     }
 
