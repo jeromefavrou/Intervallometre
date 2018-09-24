@@ -36,6 +36,10 @@ class GNU
             RAW image(capt);
             image.load();
 
+            cv::circle(image.data(),image.get_resolution()/2,300,cv::Scalar( 0, 0, 255 ),10,8);
+            cv::line(image.data(), image.get_resolution()/2, image.get_resolution()/2+cv::Point(0,300), cv::Scalar( 0, 0, 255 ), 5, 8);
+            cv::line(image.data(), image.get_resolution()/2, image.get_resolution()/2+cv::Point(300,0), cv::Scalar( 0, 0, 255 ), 5, 8);
+
             std::vector<cv::Mat> rgbChannels(3);
 
             while(capt==t_capt && capt!="exit")
@@ -51,7 +55,7 @@ class GNU
                 cv::imshow( m_name_green_windows, rgbChannels[1]);
                 cv::imshow( m_name_full_windows, dst);
 
-                cv::waitKey(1000);//10s
+                cv::waitKey(3000);//3s
             }
 
 

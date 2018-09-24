@@ -47,6 +47,7 @@ class CSocketTCPClient
 {
     public:
     enum typeip{HOSTNAME,IP};
+
     CSocketTCPClient(void)
     {
 
@@ -118,6 +119,7 @@ class CSocketTCPClient
 
         send(*Sk_Channel[idx],buffer.data(),buffer.size(),0);
     }
+
     template<unsigned int octets>int Read(unsigned int const &idx,VCHAR &buffer)
     {
         std::map<unsigned int,std::shared_ptr<SOCKET>>::iterator it;
