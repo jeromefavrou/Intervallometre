@@ -1,7 +1,7 @@
 
 # Intervallometre
 -----------------
-* installation automatique linux_64 (ex pour ubuntu):
+* installation automatique linux_64 (ex pour ubuntu): non opérationelle
 -----------------
 1. chmod +x ./install.linux64
 2. sudo ./install.linux64 (peut prendre un certains temps)
