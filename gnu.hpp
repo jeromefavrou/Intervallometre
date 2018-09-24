@@ -36,9 +36,10 @@ class GNU
             RAW image(capt);
             image.load();
 
-            cv::circle(image.data(),image.get_resolution()/2,300,cv::Scalar( 0, 0, 255 ),10,8);
-            cv::line(image.data(), image.get_resolution()/2, image.get_resolution()/2+cv::Point(0,300), cv::Scalar( 0, 0, 255 ), 5, 8);
-            cv::line(image.data(), image.get_resolution()/2, image.get_resolution()/2+cv::Point(300,0), cv::Scalar( 0, 0, 255 ), 5, 8);
+            int radius=image.get_resolution().x/16;
+            cv::circle(image.data(),image.get_resolution()/2,radius,cv::Scalar( 0, 0, 255 ),7,CV_AA);
+            cv::line(image.data(), image.get_resolution()/2+cv::Point(0,radius/5), image.get_resolution()/2+cv::Point(0,radius), cv::Scalar( 255, 0, 0 ), 5, CV_AA);
+            cv::line(image.data(), image.get_resolution()/2+cv::Point(radius/5,0), image.get_resolution()/2+cv::Point(radius,0), cv::Scalar( 0, 255, 0 ), 5, CV_AA);
 
             std::vector<cv::Mat> rgbChannels(3);
 
@@ -55,12 +56,10 @@ class GNU
                 cv::imshow( m_name_green_windows, rgbChannels[1]);
                 cv::imshow( m_name_full_windows, dst);
 
-                cv::waitKey(3000);//3s
+                cv::waitKey(900);
             }
 
-
             t_capt=capt;
-
         }
 
         cv::destroyAllWindows();

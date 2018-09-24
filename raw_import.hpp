@@ -154,14 +154,12 @@ public:
             this->m_data=std::make_shared<cv::Mat>(cv::Mat::zeros(3000, 5000,  CV_32FC3));
             this->m_resolution=cv::Point(5000,3000);
 
-
             return false;
         }
 
         ///image vide si erreur
         this->m_data=std::make_shared<cv::Mat>(cv::Mat::zeros(3000, 5000,  CV_32FC3));
         this->m_resolution=cv::Point(5000,3000);
-
 
         return false;
     }
