@@ -9,7 +9,7 @@
 4. ./Intervallometre
 
 ----------------------
-* installation manuel linux_64 (ex pour ubuntu): (peut prendre un certains temps)
+* installation manuel linux_64 (ex pour ubuntu): (peut prendre un certains temps) (juste notes)
 ----------------------
 1. sudo apt-get update
 2. sudo apt-get install gphoto2 libgphoto2* git cmake python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev build-essential
