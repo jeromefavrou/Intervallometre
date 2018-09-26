@@ -79,7 +79,8 @@ int main(int argc,char ** argv)
 
     std::string last_capt("");
 
-    std::thread th(&GNU::display,&Api,std::ref(last_capt));
+    std::thread th(&GNU::raw_display,&Api,std::ref(last_capt));
+    //std::thread th(&GNU::cam_display,&Api,0);
 
     std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(1000));
 
@@ -88,6 +89,7 @@ int main(int argc,char ** argv)
     last_capt="exit";
 
     th.join();
+
 
     return 0;
 }
