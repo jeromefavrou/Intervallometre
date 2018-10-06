@@ -55,7 +55,15 @@ public:
     bool check_apn(void)
     {
         //sauvegarde temporaire sur disque du resulatat
-        system("gphoto2 --auto-detect > ck_apn");
+        if(!this->tcp_client)
+        {
+            system("gphoto2 --auto-detect > ck_apn");
+        }
+        else
+        {
+            //envoir et reception du server par le client
+        }
+
 
         //lecture du resultat
         std::fstream If("ck_apn",std::ios::in);
@@ -100,10 +108,18 @@ public:
         std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(100));
 
         //commande gphoto de capture pour new et old
-        if(!this->older)
-            this->free_cmd("gphoto2 --set-config eosremoterelease=5 --wait-event=2s --set-config eosremoterelease=0 --wait-event="+exposure+"s");
+        if(!this->tcp_client)
+        {
+            if(!this->older)
+                this->free_cmd("gphoto2 --set-config eosremoterelease=5 --wait-event=2s --set-config eosremoterelease=0 --wait-event="+exposure+"s");
+            else
+                this->free_cmd("gphoto2 --set-config bulb=1 --wait-event=2s --set-config bulb=0 --wait-event="+exposure+"s");
+        }
         else
-            this->free_cmd("gphoto2 --set-config bulb=1 --wait-event=2s --set-config bulb=0 --wait-event="+exposure+"s");
+        {
+            //envoir et reception du server par le client
+        }
+
     }
 
 ///-------------------------------------------------------------
@@ -114,7 +130,14 @@ public:
         if(param==RC_Apn::Parameter::FILE)
             return;
 
-        this->free_cmd("gphoto2 --set-config "+this->parameter_to_string(param)+"="+value);
+        if(!this->tcp_client)
+        {
+            this->free_cmd("gphoto2 --set-config "+this->parameter_to_string(param)+"="+value);
+        }
+        else
+        {
+            //envoir et reception du server par le client
+        }
     }
 
 ///-------------------------------------------------------------
@@ -139,7 +162,7 @@ public:
     }
 
 ///-------------------------------------------------------------
-///passe un parametre en sa veleur string pour gphoto2
+///passe un parametre en sa valeur string pour gphoto2
 ///-------------------------------------------------------------
     static std::string parameter_to_string(RC_Apn::Parameter const & param)
     {
@@ -202,10 +225,18 @@ public:
         cast >> fcast;
 
         //on telecharge
-        system(std::string("gphoto2 --get-file="+fcast).c_str());
 
-        if(this->download_and_remove)
-            system(std::string("gphoto2 -f 1 -d "+fcast).c_str());//preciser le -f en "/.../..."
+        if(!this->tcp_client)
+        {
+            system(std::string("gphoto2 --get-file="+fcast).c_str());
+
+            if(this->download_and_remove)
+                system(std::string("gphoto2 -f 1 -d "+fcast).c_str());//preciser le -f en "/.../..."
+        }
+        else
+        {
+            //envoir et reception du server par le client
+        }
     }
 
 ///-------------------------------------------------------------
@@ -213,11 +244,21 @@ public:
 ///-------------------------------------------------------------
     std::vector<std::string> get_config(RC_Apn::Parameter const & param)
     {
-        //on eregistre via gphoto2les les valeur possible de l'apn sur disque
-        if(param==RC_Apn::Parameter::FILE)
-            system(std::string(std::string("gphoto2 --list-files")+std::string(" > buff")).c_str());
+        //on eregistre via gphoto2 les  valeurs possible de l'apn sur disque
+
+        if(!this->tcp_client)
+        {
+            //si liaison direct
+
+            if(param==RC_Apn::Parameter::FILE)
+                system(std::string(std::string("gphoto2 --list-files")+std::string(" > buff")).c_str());
+            else
+                system(std::string(std::string("gphoto2 --get-config=")+this->parameter_to_string(param)+std::string(" > buff")).c_str());
+        }
         else
-            system(std::string(std::string("gphoto2 --get-config=")+this->parameter_to_string(param)+std::string(" > buff")).c_str());
+        {
+            //envoir et reception du server par le client
+        }
 
         std::vector<std::string> gc;
 

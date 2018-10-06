@@ -60,8 +60,6 @@ int main(int argc,char ** argv)
         return -1;
     }
 
-    apn.init_parameter();
-
     if(!inter.load("Sequance_2"))
     {
         std::cerr << "aucune sequance détectée" << std::endl;
@@ -73,6 +71,8 @@ int main(int argc,char ** argv)
         std::cerr << "des erreurs ont été trouvées dans la séquance --debug-mode pour détails" << std::endl;
         return -1;
     }
+
+    apn.init_parameter();
 
     std::cout << inter.size() <<" instructions chargées" << std::endl<<std::endl;
 
