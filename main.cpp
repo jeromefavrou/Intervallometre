@@ -1,57 +1,56 @@
 #include "Intervallometre.hpp"
+#include "parser.hpp"
+
 
 int main(int argc,char ** argv)
 {
+    std::vector<std::string> Parametre=parser::parser(argc,argv);
+
     GNU Api;
     Intervallometre inter;
     RC_Apn apn;
 
-    if(argc>=2)
+    inter.debug_mode= parser::find("--debug-mode",Parametre) || parser::find("-d",Parametre);
+
+    apn.debug_mode= inter.debug_mode;
+    apn.download_and_remove= parser::find("--download-and-remove",Parametre) || parser::find("-f",Parametre);
+    apn.tcp_client= parser::find("--tcp-client",Parametre) || parser::find("-t",Parametre);
+    apn.older=parser::find("--old-apn",Parametre) || parser::find("-o",Parametre);
+
+    if(parser::find("--version",Parametre) || parser::find("-v",Parametre))
     {
-        inter.debug_mode=(std::string(argv[1])=="--debug-mode"||std::string(argv[1])=="-d"?true:false);
-        apn.debug_mode=(std::string(argv[1])=="--debug-mode"||std::string(argv[1])=="-d"?true:false);
-        apn.download_and_remove=(std::string(argv[1])=="--download-and-remove"||std::string(argv[1])=="-f"?true:false);
-        apn.tcp_client=(std::string(argv[1])=="--tcp-client"||std::string(argv[1])=="-t"?true:false);
+        std::cout <<"Intervallometre version = 0.0.0"<<std::endl;
+        system("gphoto2 -v");
 
-        if(std::string(argv[1])=="--version"||std::string(argv[1])=="-v")
+        std::cout <<"Opencv version = "<< CV_MAJOR_VERSION<<"."<< CV_MINOR_VERSION <<std::endl;
+
+        return 0;
+    }
+
+    if(parser::find("--upgrade",Parametre) || parser::find("-u",Parametre))
+    {
+        system("sudo apt-get update");
+        system("sudo apt-get install gphoto2 libgphoto2*");
+
+        return 0;
+    }
+
+    if(parser::find("--help",Parametre) || parser::find("-h",Parametre))
+    {
+        system("firefox https://github.com/jeromefavrou/Intervallometre/wiki");
+
+        std::fstream If("Help",std::ios::in);
+
+        if(!If)
+            std::cout << "aide introuvable" <<std::endl;
+        else
         {
-            std::cout <<"Intervallometre version = 0.0.0"<<std::endl;
-            system("gphoto2 -v");
-
-            std::cout <<"Opencv version = "<< CV_MAJOR_VERSION<<"."<< CV_MINOR_VERSION <<std::endl;
-
-            return 0;
+            std::string line_h("");
+            while(std::getline(If,line_h))
+                std::cout << line_h << std::endl;
         }
 
-        if(std::string(argv[1])=="--upgrade"||std::string(argv[1])=="-u")
-        {
-            system("sudo apt-get update");
-            system("sudo apt-get install gphoto2 libgphoto2*");
-
-            return 0;
-        }
-
-        if(std::string(argv[1])=="--help"||std::string(argv[1])=="-h")
-        {
-            system("firefox https://github.com/jeromefavrou/Intervallometre/wiki");
-
-            std::fstream If("Help",std::ios::in);
-
-            if(!If)
-                std::cout << "aide introuvable" <<std::endl;
-            else
-            {
-                std::string line_h("");
-                while(std::getline(If,line_h))
-                    std::cout << line_h << std::endl;
-            }
-
-            return 0;
-        }
-        if(std::string(argv[1])=="--old-apn"||std::string(argv[1])=="-o")
-        {
-            apn.older=true;
-        }
+        return 0;
     }
 
     if(!apn.check_apn())
