@@ -17,6 +17,44 @@ int main(int argc,char ** argv)
     apn.tcp_client= parser::find("--tcp-client",Parametre) || parser::find("-t",Parametre);
     apn.older=parser::find("--old-apn",Parametre) || parser::find("-o",Parametre);
 
+    if(apn.tcp_client)
+    {
+        std::string addr(""),mt;
+        uint32_t port(0);
+
+        std::fstream If("server",std::ios::in);
+
+        if(!If)
+        {
+            std::cerr << "fichier de config serveur introuvable" << std::endl;
+            return -1;
+        }
+
+        If >> mt;
+        if(mt=="IP")
+            If >> addr;
+        else
+        {
+            std::cerr << "fichier de config serveur corrompue" << std::endl;
+            return -1;
+        }
+
+        If >> mt;
+        if(mt=="PORT")
+            If >> port;
+        else
+        {
+            std::cerr << "fichier de config serveur corrompue" << std::endl;
+            return -1;
+        }
+
+        if(!apn.connect(addr,port))
+        {
+            std::cerr << "connection impossible: " << addr <<":"<< port << std::endl;
+            return -1;
+        }
+    }
+
     if(parser::find("--version",Parametre) || parser::find("-v",Parametre))
     {
         std::cout <<"Intervallometre version = 0.0.0"<<std::endl;
@@ -42,7 +80,7 @@ int main(int argc,char ** argv)
         std::fstream If("Help",std::ios::in);
 
         if(!If)
-            std::cout << "aide introuvable" <<std::endl;
+            std::cerr << "aide introuvable" <<std::endl;
         else
         {
             std::string line_h("");

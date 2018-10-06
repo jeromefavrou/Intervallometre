@@ -211,6 +211,17 @@ public:
         }
 
     }
+///-------------------------------------------------------------
+///tentative de connection au serveur
+///-------------------------------------------------------------
+    bool connect(std::string const &addr,uint32_t const &port)
+    {
+        if(!this->tcp_client)
+            return false;
+
+        //init sock + connection + recois confirm + syncro
+        return false;
+    }
 
     private:
 
