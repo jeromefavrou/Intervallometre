@@ -1,131 +1,125 @@
-#include "Intervallometre.hpp"
-#include "parser.hpp"
+#include <iostream>
+#include <array>
+#include "serveur.cpp"
+#include "Remote_controle_apn.hpp"
 
+#define SERVEUR_ID 0
+#define CLIENT_ID 1
+#define NbStats 2 //{continuer,client}
+#define client 1
+#define continuer 0
 
-int main(int argc,char ** argv)
+void th_Connection(CSocketTCPServeur & Server,std::array<bool,NbStats> & stats)
 {
-    std::vector<std::string> Parametre=parser::parser(argc,argv);
+    //boucle tant que le bit continue est a 1
+    while(stats[continuer])
+    {
+        if(!stats[client])
+        {
+            //attant 2 secondes avant de rafraichire le terminal
+            std::this_thread::sleep_for( std::chrono::duration<double, std::milli>(2000));
+            system("clear");
 
-    GNU Api;
-    Intervallometre inter;
+            std::cout<<"attente du client..."<<std::endl;
+
+            //attante du client
+            Server.AcceptClient(SERVEUR_ID,CLIENT_ID);
+
+            //mise a 1 octet client
+            stats[client]=true;
+        }
+
+        //si pas de client limite les frames
+        std::this_thread::sleep_for( std::chrono::duration<double, std::milli>(20));
+    }
+}
+
+void th_Ecoute(CSocketTCPServeur & Server,std::array<bool,NbStats> &stats,RC_Apn & apn)
+{
+    //boucle tant que le bit continue est a 1
+    while(stats[continuer])
+    {
+        if(stats[client])
+        {
+            VCHAR BufferReq;
+
+            //ecoute en attante d'une requte du client.
+            int lenght=Server.Read<2048>(CLIENT_ID,BufferReq);
+
+            //test avec telnet // supression des \n\r de telnet
+            BufferReq.pop_back();
+            BufferReq.pop_back();
+
+            //si deconnection du client
+            if(lenght==0)
+            {
+                std::cout<<"Le client à déconnecté"<<std::endl;
+                //mise a 0 de l'octet presance client
+                stats[client]=false;
+            }
+            //sinon si requete reçu
+            else if(lenght>0)
+            {
+                //affichage tram
+                for(auto &i : BufferReq)
+                    std::cout <<"0x"<<std::hex <<static_cast<int>(i)<<" " ;
+                std::cout <<std::dec<< std::endl;
+
+                //test de com avec telnet
+                if(VCharToString(BufferReq)=="+")
+                {
+                    if(!apn.check_apn())
+                        std::cout <<"aucun apn detecté"<< std::endl;
+                }
+
+
+            }
+        }
+        //si pas de client limite les frames
+        std::this_thread::sleep_for( std::chrono::duration<double, std::milli>(20));
+    }
+}
+
+int main()
+{
+
     RC_Apn apn;
 
-    inter.debug_mode= parser::find("--debug-mode",Parametre) || parser::find("-d",Parametre);
+    apn.debug_mode=true;
 
-    apn.debug_mode= inter.debug_mode;
-    apn.download_and_remove= parser::find("--download-and-remove",Parametre) || parser::find("-f",Parametre);
-    apn.tcp_client= parser::find("--tcp-client",Parametre) || parser::find("-t",Parametre);
-    apn.older=parser::find("--old-apn",Parametre) || parser::find("-o",Parametre);
+    CSocketTCPServeur serveur;
 
-    if(apn.tcp_client)
+    std::array<bool,NbStats> Stats{true,false};
+
+    try
     {
-        std::string addr(""),mt;
-        uint32_t port(0);
+        serveur.NewSocket(SERVEUR_ID);
+        serveur.BindServeur(SERVEUR_ID,INADDR_ANY,9876);
+        serveur.Listen(SERVEUR_ID,1);
 
-        std::fstream If("server",std::ios::in);
+        std::this_thread::sleep_for( std::chrono::duration<double, std::milli>(2000));
 
-        if(!If)
-        {
-            std::cerr << "fichier de config serveur introuvable" << std::endl;
-            return -1;
-        }
+        std::thread Connect(th_Connection,std::ref(serveur),std::ref(Stats));
+        Connect.detach();
+        std::thread Listen(th_Ecoute,std::ref(serveur),std::ref(Stats),std::ref(apn));
 
-        If >> mt;
-        if(mt=="IP")
-            If >> addr;
-        else
-        {
-            std::cerr << "fichier de config serveur corrompue" << std::endl;
-            return -1;
-        }
+        std::cin.get();
 
-        If >> mt;
-        if(mt=="PORT")
-            If >> port;
-        else
-        {
-            std::cerr << "fichier de config serveur corrompue" << std::endl;
-            return -1;
-        }
+        Stats[continuer]=false;
 
-        if(!apn.connect(addr,port))
-        {
-            std::cerr << "connection impossible: " << addr <<":"<< port << std::endl;
-            return -1;
-        }
+
+        Listen.join();
+    }
+    catch(std::string const & error)
+    {
+        std::cerr<<error<<std::endl;
+    }
+    catch(std::range_error const & error)
+    {
+        std::cerr<<error.what()<<std::endl;
     }
 
-    if(parser::find("--version",Parametre) || parser::find("-v",Parametre))
-    {
-        std::cout <<"Intervallometre version = 0.0.0"<<std::endl;
-        system("gphoto2 -v");
-
-        std::cout <<"Opencv version = "<< CV_MAJOR_VERSION<<"."<< CV_MINOR_VERSION <<std::endl;
-
-        return 0;
-    }
-
-    if(parser::find("--upgrade",Parametre) || parser::find("-u",Parametre))
-    {
-        system("sudo apt-get update");
-        system("sudo apt-get install gphoto2 libgphoto2*");
-
-        return 0;
-    }
-
-    if(parser::find("--help",Parametre) || parser::find("-h",Parametre))
-    {
-        system("firefox https://github.com/jeromefavrou/Intervallometre/wiki");
-
-        std::fstream If("Help",std::ios::in);
-
-        if(!If)
-            std::cerr << "aide introuvable" <<std::endl;
-        else
-        {
-            std::string line_h("");
-            while(std::getline(If,line_h))
-                std::cout << line_h << std::endl;
-        }
-
-        return 0;
-    }
-
-    if(!apn.check_apn())
-    {
-        std::cerr << "aucun apn detecté" << std::endl;
-
-        return -1;
-    }
-
-    if(!inter.load("Sequance_2"))
-    {
-        std::cerr << "aucune sequance détectée" << std::endl;
-
-        return -1;
-    }
-    else if(!inter.check_sequance(apn))
-    {
-        std::cerr << "des erreurs ont été trouvées dans la séquance --debug-mode pour détails" << std::endl;
-        return -1;
-    }
-
-    apn.init_parameter();
-
-    std::cout << inter.size() <<" instructions chargées" << std::endl<<std::endl;
-
-    std::string last_capt("");
-
-    std::thread th(&GNU::raw_display,&Api,std::ref(last_capt));
-    //std::thread th(&GNU::cam_display,&Api,0);
-
-    std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(1000));
-
-    inter.run_seq(apn,last_capt);
-
-    last_capt="exit";
-
-    th.join();
+    serveur.CloseSocket(SERVEUR_ID);
 
 
     return 0;
