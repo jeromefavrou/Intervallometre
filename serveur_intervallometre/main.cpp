@@ -34,10 +34,58 @@ void th_Connection(CSocketTCPServeur & Server,std::array<bool,NbStats> & stats)
     }
 }
 
+void th_Ecoute(CSocketTCPServeur & Server,std::array<bool,NbStats> &stats,RC_Apn & apn)
+{
+    //boucle tant que le bit continue est a 1
+    while(stats[continuer])
+    {
+        if(stats[client])
+        {
+            VCHAR BufferReq;
+
+            //ecoute en attante d'une requte du client.
+            int lenght=Server.Read<2048>(CLIENT_ID,BufferReq);
+
+            //test avec telnet // supression des \n\r de telnet
+            BufferReq.pop_back();
+            BufferReq.pop_back();
+
+            //si deconnection du client
+            if(lenght==0)
+            {
+                std::cout<<"Le client à déconnecté"<<std::endl;
+                //mise a 0 de l'octet presance client
+                stats[client]=false;
+            }
+            //sinon si requete reçu
+            else if(lenght>0)
+            {
+                //affichage tram
+                for(auto &i : BufferReq)
+                    std::cout <<"0x"<<std::hex <<static_cast<int>(i)<<" " ;
+                std::cout <<std::dec<< std::endl;
+
+                //test de com avec telnet
+                if(VCharToString(BufferReq)=="+")
+                {
+                    if(!apn.check_apn())
+                        std::cout <<"aucun apn detecté"<< std::endl;
+                }
+
+
+            }
+        }
+        //si pas de client limite les frames
+        std::this_thread::sleep_for( std::chrono::duration<double, std::milli>(20));
+    }
+}
+
 int main()
 {
 
     RC_Apn apn;
+
+    apn.debug_mode=true;
 
     CSocketTCPServeur serveur;
 
@@ -52,12 +100,15 @@ int main()
         std::this_thread::sleep_for( std::chrono::duration<double, std::milli>(2000));
 
         std::thread Connect(th_Connection,std::ref(serveur),std::ref(Stats));
+        Connect.detach();
+        std::thread Listen(th_Ecoute,std::ref(serveur),std::ref(Stats),std::ref(apn));
 
         std::cin.get();
 
         Stats[continuer]=false;
 
-        Connect.join();
+
+        Listen.join();
     }
     catch(std::string const & error)
     {
