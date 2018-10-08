@@ -46,9 +46,6 @@ void th_Ecoute(CSocketTCPServeur & Server,std::array<bool,NbStats> &stats,RC_Apn
             //ecoute en attante d'une requte du client.
             int lenght=Server.Read<2048>(CLIENT_ID,BufferReq);
 
-            //test avec telnet // supression des \n\r de telnet
-            BufferReq.pop_back();
-            BufferReq.pop_back();
 
             //si deconnection du client
             if(lenght==0)
@@ -66,7 +63,7 @@ void th_Ecoute(CSocketTCPServeur & Server,std::array<bool,NbStats> &stats,RC_Apn
                 std::cout <<std::dec<< std::endl;
 
                 //test de com avec telnet
-                if(VCharToString(BufferReq)=="+")
+                if(static_cast<int>(BufferReq[1])==0x09 && static_cast<int>(BufferReq[1])==0x00 && static_cast<int>(BufferReq[1])==0x0d)
                 {
                     if(!apn.check_apn())
                         std::cout <<"aucun apn detecté"<< std::endl;
