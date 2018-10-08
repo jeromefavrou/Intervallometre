@@ -6,7 +6,8 @@
 #include <cstdlib>
 #include <thread>
 #include <sstream>
-
+#include <memory>
+#include "client_tcp.hpp"
 
 class RC_Apn
 {
@@ -27,13 +28,60 @@ public:
 ///-------------------------------------------------------------
 ///initialisation aux valeurs par defaut
 ///-------------------------------------------------------------
-    RC_Apn(void)
+    RC_Apn(void):m_client(nullptr),m_id_client(0)
     {
         this->debug_mode=false;
         this->tcp_client=false;
         this->download_and_remove=false;
         this->older=false;
         this->m_void=std::vector<std::string>(0);
+    }
+
+///-------------------------------------------------------------
+///initialisation aux valeurs par defaut
+///-------------------------------------------------------------
+    ~RC_Apn(void)
+    {
+        if(this->m_client!=nullptr)
+        {
+            this->m_client->CloseSocket(this->m_id_client);
+        }
+    }
+
+///-------------------------------------------------------------
+///cree un client et se connecte au serveur
+///-------------------------------------------------------------
+    bool connect(std::string const & ip,uint32_t const & port)
+    {
+        if(this->tcp_client)
+        {
+            try
+            {
+                this->m_client=std::make_unique<CSocketTCPClient>(CSocketTCPClient());
+
+                this->m_client->NewSocket(this->m_id_client);
+
+                this->m_client->Connect(this->m_id_client,ip,port,CSocketTCPClient::IP);
+
+                return true;
+            }
+            catch(std::exception const & error)
+            {
+                if(this->debug_mode)
+                    std::cerr << error.what() <<std::endl;
+
+                return false;
+            }
+            catch(std::string const & error)
+            {
+                if(this->debug_mode)
+                    std::cerr << error <<std::endl;
+
+                return false;
+            }
+        }
+
+        return false;
     }
 
 ///-------------------------------------------------------------
@@ -64,9 +112,10 @@ public:
         }
         else
         {
-            //envoir et reception du server par le client
-        }
+            VCHAR tram{0x09,0x00,0x0d};
 
+            this->m_client->Write(this->m_id_client,tram);
+        }
 
         //lecture du resultat
         std::fstream If("ck_apn",std::ios::in);
@@ -214,17 +263,6 @@ public:
         }
 
     }
-///-------------------------------------------------------------
-///tentative de connection au serveur
-///-------------------------------------------------------------
-    bool connect(std::string const &addr,uint32_t const &port)
-    {
-        if(!this->tcp_client)
-            return false;
-
-        //init sock + connection + recois confirm + syncro
-        return false;
-    }
 
     private:
 
@@ -330,6 +368,9 @@ public:
     std::vector<std::string> m_file;
     //si pas de donné ou erreur renvoie vide
     std::vector<std::string> m_void;
+
+    std::unique_ptr<CSocketTCPClient> m_client;
+    int const m_id_client;
 };
 
 #endif // REMOTE_CONTROLE_APN_HPP_INCLUDED
