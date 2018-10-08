@@ -9,6 +9,39 @@
 #define client 1
 #define continuer 0
 
+VCHAR interpretteur(VCHAR const & tram, RC_Apn & apn)
+{
+    if(tram[0] !='\t' || tram.back() != '\r')
+        return {'\t',static_cast<char>(0xFF),'t','r','a','m',' ','i','n','v','a','l','i','d','e','\r'};
+
+    for(auto  i=1;i< tram.size();i++)
+    {
+        if(tram[i]=='\r')
+            break;
+
+        if(static_cast<int>(tram[i])==0x00)
+        {
+            if(apn.check_apn())
+            {
+            }
+            else
+                return {'\t',static_cast<char>(0xFF),'a','u','c','u','n',' ','a','p','n',' ','d','e','t','e','c','t','e','\r'};
+        }
+        else if(static_cast<int>(tram[i])==0x01)
+        {
+        }
+        else if(static_cast<int>(tram[i])==0x02)
+        {
+        }
+        else if(static_cast<int>(tram[i])==0x03)
+        {
+        }
+    }
+
+
+    return {'\t',static_cast<char>(0xFF),'t','r','a','m',' ','i','n','v','a','l','i','d','e','\r'};
+}
+
 void th_Connection(CSocketTCPServeur & Server,std::array<bool,NbStats> & stats)
 {
     //boucle tant que le bit continue est a 1
@@ -62,13 +95,7 @@ void th_Ecoute(CSocketTCPServeur & Server,std::array<bool,NbStats> &stats,RC_Apn
                     std::cout <<"0x"<<std::hex <<static_cast<int>(i)<<" " ;
                 std::cout <<std::dec<< std::endl;
 
-                //test de com avec telnet
-                if(static_cast<int>(BufferReq[1])==0x09 && static_cast<int>(BufferReq[1])==0x00 && static_cast<int>(BufferReq[1])==0x0d)
-                {
-                    if(!apn.check_apn())
-                        std::cout <<"aucun apn detecté"<< std::endl;
-                }
-
+                Server.Write(CLIENT_ID,interpretteur(BufferReq,apn));
 
             }
         }
