@@ -114,7 +114,66 @@ public:
         {
             VCHAR tram{0x09,0x00,0x0d};
 
+            //envoie la demande de chack apn au serveur \t null \r
             this->m_client->Write(this->m_id_client,tram);
+
+            //attend la réponse
+            VCHAR rep_tram;
+            this->m_client->Read<2048>(this->m_id_client,rep_tram);
+
+            if(rep_tram.size()>0)
+            {
+                if(rep_tram[0]=='\t' && rep_tram.back()=='\r')
+                {
+                    if(static_cast<int>(rep_tram[1])==0x7e)
+                        return true;
+                    else if(static_cast<int>(rep_tram[1])==0x7f)
+                    {
+                        if(this->debug_mode)
+                        {
+                            std::cerr <<"erreur renvoyer par le serveur: " ;
+
+                            for(auto &t : rep_tram)
+                            {
+                                if(t=='\r')
+                                    break;
+                                if(t=='\t')
+                                    continue;
+
+                                std::cerr << t ;
+                            }
+
+                            std::cerr<<std::endl;
+                        }
+
+                        return false;
+                    }
+                    else
+                    {
+                        if(this->debug_mode)
+                        {
+                            std::cerr <<"erreur de tram avec le serveur"<<std::endl;
+
+                            for(auto &t : rep_tram)
+                                std::cerr << "0x" << std::hex << static_cast<int>(t) << std::dec <<" ";
+                            std::cerr<<std::endl;
+                        }
+
+                        return false;
+                    }
+                }
+                else
+                {
+                    if(this->debug_mode)
+                        std::cerr << " header et footer tram non respecté par le serveur"<<std::endl;
+                    return false;
+                }
+            }
+            else
+            {
+                std::cout <<"erreur de connection avec le serveur" <<std::endl;
+                return false;
+            }
         }
 
         //lecture du resultat
@@ -169,7 +228,10 @@ public:
         }
         else
         {
-            //envoir et reception du server par le client
+            VCHAR tram{0x09,0x01,'\n',0x10,'\n',0x11,'\n',0x12,'\n',0x0d};
+
+            //envoie la demande de chack apn au serveur
+            this->m_client->Write(this->m_id_client,tram);
         }
 
     }
@@ -188,7 +250,9 @@ public:
         }
         else
         {
-            //envoir et reception du server par le client
+            VCHAR tram{0x09,0x02,'\n',0x20,'\n',0x21,'\n',0x22,'\n',0x23,'\n',0x24,'\n',0x25,'\n',0x26,'\n',0x0d};
+
+            this->m_client->Write(this->m_id_client,tram);
         }
     }
 
@@ -287,7 +351,9 @@ public:
         }
         else
         {
+            ///VCHAR tram{0x09,0x02,'\n',0x20,'\n',0x21,'\n',0x22,'\n',0x23,'\n',0x24,'\n',0x25,'\n',0x26,'\n',0x0d};
             //envoir et reception du server par le client
+            ///this->m_client->Write(this->m_id_client,tram);
         }
     }
 
