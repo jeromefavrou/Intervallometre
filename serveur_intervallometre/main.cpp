@@ -12,7 +12,7 @@
 VCHAR interpretteur(VCHAR const & tram, RC_Apn & apn)
 {
     if(tram[0] !='\t' || tram.back() != '\r')
-        return {'\t',static_cast<char>(0xFF),'t','r','a','m',' ','i','n','v','a','l','i','d','e','\r'};
+        return {'\t',static_cast<char>(0x07f),'t','r','a','m',' ','i','n','v','a','l','i','d','e','\r'};
 
     for(auto  i=1;i< tram.size();i++)
     {
@@ -23,9 +23,10 @@ VCHAR interpretteur(VCHAR const & tram, RC_Apn & apn)
         {
             if(apn.check_apn())
             {
+                return {'\t',static_cast<char>(0x07e),'\r'};
             }
             else
-                return {'\t',static_cast<char>(0xFF),'a','u','c','u','n',' ','a','p','n',' ','d','e','t','e','c','t','e','\r'};
+                return {'\t',static_cast<char>(0x07f),'a','u','c','u','n',' ','a','p','n',' ','d','e','t','e','c','t','e','\r'};
         }
         else if(static_cast<int>(tram[i])==0x01)
         {
@@ -39,7 +40,7 @@ VCHAR interpretteur(VCHAR const & tram, RC_Apn & apn)
     }
 
 
-    return {'\t',static_cast<char>(0xFF),'t','r','a','m',' ','i','n','v','a','l','i','d','e','\r'};
+    return {'\t',static_cast<char>(0x07f),'t','r','a','m',' ','i','n','v','a','l','i','d','e',' ','d','u',' ','c','l','i','e','n','t','\r'};
 }
 
 void th_Connection(CSocketTCPServeur & Server,std::array<bool,NbStats> & stats)
