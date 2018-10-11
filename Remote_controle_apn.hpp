@@ -8,6 +8,7 @@
 #include <sstream>
 #include <memory>
 #include "client_tcp.hpp"
+#include "tram.hpp"
 
 class RC_Apn
 {
@@ -112,7 +113,7 @@ public:
         }
         else
         {
-            VCHAR tram{0x09,0x00,0x0d};
+            VCHAR tram{Tram::SOH,0x00,Tram::EOT};
 
             //envoie la demande de chack apn au serveur \t null \r
             this->m_client->Write(this->m_id_client,tram);
@@ -123,11 +124,11 @@ public:
 
             if(rep_tram.size()>0)
             {
-                if(rep_tram[0]=='\t' && rep_tram.back()=='\r')
+                if(rep_tram[0]==Tram::SOH && rep_tram.back()==Tram::EOT)
                 {
-                    if(static_cast<int>(rep_tram[1])==0x7e)
+                    if(static_cast<int>(rep_tram[1])==Tram::ACK)
                         return true;
-                    else if(static_cast<int>(rep_tram[1])==0x7f)
+                    else if(static_cast<int>(rep_tram[1])==Tram::NAK)
                     {
                         if(this->debug_mode)
                         {
@@ -135,9 +136,9 @@ public:
 
                             for(auto &t : rep_tram)
                             {
-                                if(t=='\r')
+                                if(t==Tram::EOT)
                                     break;
-                                if(t=='\t')
+                                if(t==Tram::SOH)
                                     continue;
 
                                 std::cerr << t ;
