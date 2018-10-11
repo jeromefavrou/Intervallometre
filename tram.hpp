@@ -81,6 +81,14 @@ class Tram
 
             return t;
         }
+	Tram operator+(char const & add)
+        {
+            Tram t(*this);
+
+            t.get_data().push_back(i);
+
+            return t;
+        }
 
         Tram operator+=(Tram const & add)
         {
@@ -100,6 +108,12 @@ class Tram
         {
             for(auto & i : add)
                 this->m_data.push_back(i);
+
+            return *this;
+        }
+	Tram operator+=(char const & add)
+        {
+            this->m_data.push_back(i);
 
             return *this;
         }
