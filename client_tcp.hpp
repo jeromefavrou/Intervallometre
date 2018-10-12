@@ -24,24 +24,7 @@ typedef struct in_addr IN_ADDR;
 #include <vector>
 #include <string>
 #include <memory>
-
-
-typedef std::vector<char> VCHAR;
-
-inline VCHAR StringToVChar(std::string const& str)
-{
-    VCHAR buffer;
-    for(auto i:str)
-        buffer.push_back(i);
-    return buffer;
-}
-inline std::string VCharToString(VCHAR const & buffer)
-{
-    std::string str="";
-    for(auto i:buffer)
-        str+=i;
-    return str;
-}
+#include "tram.hpp"
 
 class CSocketTCPClient
 {

@@ -23,6 +23,14 @@ public:
     ///definit si mode de compatibilité avec ancien apn activé
     bool older;
 
+    ///byts de communication
+    static char const CA=0x3A; //check apn
+    static char const SC=0x3B; //set config
+    static char const GC=0x3C; //get config
+    static char const CED=0x3D; //capture eos dslr
+    static char const D=0x3E; //download
+    static char const DAR=0x3F; //download and remove
+
     ///definition des parametre apn utile
     enum Parameter{ APERTURE=1, ISO , SHUTTERSPEED , FORMAT , TARGET , WHITE_BALANCE , PICTURE_STYLE, FILE};
 
@@ -113,10 +121,8 @@ public:
         }
         else
         {
-            VCHAR tram{Tram::SOH,0x00,Tram::EOT};
-
-            //envoie la demande de chack apn au serveur \t null \r
-            this->m_client->Write(this->m_id_client,tram);
+            //envoie la demande de chack apn au serveur
+            this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::SOH,RC_Apn::CA,Tram::EOT}).get_c_data());
 
             //attend la réponse
             VCHAR rep_tram;
@@ -323,6 +329,7 @@ public:
         {
             if(this->debug_mode)
                 std::cout << "telechargement vers: "<<where<<std::endl;
+
             system(std::string("cp "+why+" "+where).c_str());
             system(std::string("rm "+why).c_str());
         }
