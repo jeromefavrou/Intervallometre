@@ -10,38 +10,65 @@
 #define client 1
 #define continuer 0
 
-VCHAR interpretteur(VCHAR const & tram, RC_Apn & apn)
+Tram interpretteur(VCHAR const & tram, RC_Apn & apn)
 {
+    Tram t;
     if(tram[0] !=Tram::SOH || tram.back() != Tram::EOT)
-        return {Tram::SOH,static_cast<char>(0x07f),'t','r','a','m',' ','i','n','v','a','l','i','d','e',Tram::EOT};
+    {
+        t;
+        t+=char(Tram::SOH);
+        t+=char(Tram::NAK);
+        t+="header ou/et footer incorrect";
+        t+=char(Tram::EOT);
+
+        return t;
+    }
+
 
     for(auto  i=1;i< tram.size();i++)
     {
         if(tram[i]==Tram::EOT)
             break;
 
-        if(static_cast<int>(tram[i])==0x00)
+        if(static_cast<int>(tram[i])==RC_Apn::CA)
         {
             if(apn.check_apn())
-            {
-                return {Tram::SOH,Tram::ACK,Tram::EOT};
-            }
+                return Tram(VCHAR{Tram::SOH,Tram::ACK,Tram::EOT});
             else
-                return {Tram::SOH,Tram::NAK,'a','u','c','u','n',' ','a','p','n',' ','d','e','t','e','c','t','e',Tram::EOT};
+            {
+                t+=char(Tram::SOH);
+                t+=char(Tram::NAK);
+                t+="aucun apn detecte";
+                t+=char(Tram::EOT);
+
+                return t.get_data();
+            }
+
         }
-        else if(static_cast<int>(tram[i])==0x01)
+        else if(static_cast<int>(tram[i])==RC_Apn::SC)
         {
         }
-        else if(static_cast<int>(tram[i])==0x02)
+        else if(static_cast<int>(tram[i])==RC_Apn::GC)
         {
         }
-        else if(static_cast<int>(tram[i])==0x03)
+        else if(static_cast<int>(tram[i])==RC_Apn::CED)
         {
         }
+        else if(static_cast<int>(tram[i])==RC_Apn::D)
+        {
+        }
+        else if(static_cast<int>(tram[i])==RC_Apn::DAR)
+        {
+        }
+
     }
 
+    t+=char(Tram::SOH);
+    t+=char(Tram::NAK);
+    t+="trame invalide du client";
+    t+=char(Tram::EOT);
 
-    return {Tram::SOH,Tram::NAK,'t','r','a','m',' ','i','n','v','a','l','i','d','e',' ','d','u',' ','c','l','i','e','n','t',Tram::EOT};
+    return t.get_data();
 }
 
 void th_Connection(CSocketTCPServeur & Server,std::array<bool,NbStats> & stats)
@@ -97,7 +124,7 @@ void th_Ecoute(CSocketTCPServeur & Server,std::array<bool,NbStats> &stats,RC_Apn
                     std::cout <<"0x"<<std::hex <<static_cast<int>(i)<<" " ;
                 std::cout <<std::dec<< std::endl;
 
-                Server.Write(CLIENT_ID,interpretteur(BufferReq,apn));
+                Server.Write(CLIENT_ID,interpretteur(BufferReq,apn).get_c_data());
 
             }
         }
