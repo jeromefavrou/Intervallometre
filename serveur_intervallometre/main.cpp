@@ -13,13 +13,13 @@
 Tram interpretteur(VCHAR const & tram, RC_Apn & apn)
 {
     Tram t;
-    if(tram[0] !=Tram::SOH || tram.back() != Tram::EOT)
+    if(tram[0] !=Tram::Com_bytes::SOH || tram.back() != Tram::Com_bytes::EOT)
     {
         t;
-        t+=char(Tram::SOH);
-        t+=char(Tram::NAK);
+        t+=char(Tram::Com_bytes::SOH);
+        t+=char(Tram::Com_bytes::NAK);
         t+="header ou/et footer incorrect";
-        t+=char(Tram::EOT);
+        t+=char(Tram::Com_bytes::EOT);
 
         return t;
     }
@@ -27,46 +27,46 @@ Tram interpretteur(VCHAR const & tram, RC_Apn & apn)
 
     for(auto  i=1;i< tram.size();i++)
     {
-        if(tram[i]==Tram::EOT)
+        if(tram[i]==Tram::Com_bytes::EOT)
             break;
 
-        if(static_cast<int>(tram[i])==RC_Apn::CA)
+        if(static_cast<int>(tram[i])==RC_Apn::Com_bytes::Check_Apn)
         {
             if(apn.check_apn())
-                return Tram(VCHAR{Tram::SOH,Tram::ACK,Tram::EOT});
+                return Tram(VCHAR{Tram::Com_bytes::SOH,Tram::Com_bytes::ACK,Tram::Com_bytes::EOT});
             else
             {
-                t+=char(Tram::SOH);
-                t+=char(Tram::NAK);
+                t+=char(Tram::Com_bytes::SOH);
+                t+=char(Tram::Com_bytes::NAK);
                 t+="aucun apn detecte";
-                t+=char(Tram::EOT);
+                t+=char(Tram::Com_bytes::EOT);
 
                 return t.get_data();
             }
 
         }
-        else if(static_cast<int>(tram[i])==RC_Apn::SC)
+        else if(static_cast<int>(tram[i])==RC_Apn::Com_bytes::Set_Config)
         {
         }
-        else if(static_cast<int>(tram[i])==RC_Apn::GC)
+        else if(static_cast<int>(tram[i])==RC_Apn::Com_bytes::Get_Config)
         {
         }
-        else if(static_cast<int>(tram[i])==RC_Apn::CED)
+        else if(static_cast<int>(tram[i])==RC_Apn::Com_bytes::Capture_Eos_Dslr)
         {
         }
-        else if(static_cast<int>(tram[i])==RC_Apn::D)
+        else if(static_cast<int>(tram[i])==RC_Apn::Com_bytes::Download)
         {
         }
-        else if(static_cast<int>(tram[i])==RC_Apn::DAR)
+        else if(static_cast<int>(tram[i])==RC_Apn::Com_bytes::Download_And_Remove)
         {
         }
 
     }
 
-    t+=char(Tram::SOH);
-    t+=char(Tram::NAK);
+    t+=char(Tram::Com_bytes::SOH);
+    t+=char(Tram::Com_bytes::NAK);
     t+="trame invalide du client";
-    t+=char(Tram::EOT);
+    t+=char(Tram::Com_bytes::EOT);
 
     return t.get_data();
 }
