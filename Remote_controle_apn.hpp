@@ -24,12 +24,31 @@ public:
     bool older;
 
     ///byts de communication
-    static char const CA=0x3A; //check apn
-    static char const SC=0x3B; //set config
-    static char const GC=0x3C; //get config
-    static char const CED=0x3D; //capture eos dslr
-    static char const D=0x3E; //download
-    static char const DAR=0x3F; //download and remove
+    class Com_bytes
+    {
+    public:
+        static char const Check_Apn=0x3A; //check apn
+        static char const Set_Config=0x3B; //set config
+        static char const Get_Config=0x3C; //get config
+        static char const Capture_Eos_Dslr=0x3D; //capture eos dslr
+        static char const Download=0x3E; //download
+        static char const Download_And_Remove=0x3F; //download and remove
+
+        static char const Aperture=0x61;
+        static char const Shutterspeed=0x62;
+        static char const Iso=0x63;
+        static char const Format=0x64;
+        static char const Target=0x65;
+        static char const White_balance=0x66;
+        static char const Picture_style=0x67;
+        static char const File=0x68;
+        static char const Older=0x69;
+        static char const Exposure=0x6A;
+        static char const Intervalle=0x6B;
+        static char const Debug_mode=0x6C;
+        static char const Tcp_client=0x6D;
+    };
+
 
     ///definition des parametre apn utile
     enum Parameter{ APERTURE=1, ISO , SHUTTERSPEED , FORMAT , TARGET , WHITE_BALANCE , PICTURE_STYLE, FILE};
@@ -122,7 +141,7 @@ public:
         else
         {
             //envoie la demande de chack apn au serveur
-            this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::SOH,RC_Apn::CA,Tram::EOT}).get_c_data());
+            this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Check_Apn,Tram::Com_bytes::EOT}).get_c_data());
 
             //attend la réponse
             VCHAR rep_tram;
@@ -130,11 +149,11 @@ public:
 
             if(rep_tram.size()>0)
             {
-                if(rep_tram[0]==Tram::SOH && rep_tram.back()==Tram::EOT)
+                if(rep_tram[0]==Tram::Com_bytes::SOH && rep_tram.back()==Tram::Com_bytes::EOT)
                 {
-                    if(static_cast<int>(rep_tram[1])==Tram::ACK)
+                    if(static_cast<int>(rep_tram[1])==Tram::Com_bytes::ACK)
                         return true;
-                    else if(static_cast<int>(rep_tram[1])==Tram::NAK)
+                    else if(static_cast<int>(rep_tram[1])==Tram::Com_bytes::NAK)
                     {
                         if(this->debug_mode)
                         {
@@ -142,9 +161,9 @@ public:
 
                             for(auto &t : rep_tram)
                             {
-                                if(t==Tram::EOT)
+                                if(t==Tram::Com_bytes::EOT)
                                     break;
-                                if(t==Tram::SOH)
+                                if(t==Tram::Com_bytes::SOH)
                                     continue;
 
                                 std::cerr << t ;
@@ -283,7 +302,6 @@ public:
         }
         return this->m_void;
     }
-
 ///-------------------------------------------------------------
 ///passe un parametre en sa valeur string pour gphoto2
 ///-------------------------------------------------------------

@@ -25,12 +25,15 @@ class Tram
 {
     public:
         //ascii correspondance
-        static char const SOH=0x01; //Start of Heading
-        static char const EOT=0x04; //End of Transmission
-        static char const ACK=0x06; //Acknowledge
-        static char const NAK=0x15; //Negative Acknowledge
-        static char const US= 0x1F; //Unit Separator
-
+        class Com_bytes
+        {
+        public:
+            static char const SOH=0x01; //Start of Heading
+            static char const EOT=0x04; //End of Transmission
+            static char const ACK=0x06; //Acknowledge
+            static char const NAK=0x15; //Negative Acknowledge
+            static char const US= 0x1F; //Unit Separator
+        };
         Tram(void){}
         Tram(Tram const & cpy):m_data(cpy.get_c_data()){}
         Tram(std::string const & init):m_data(StringToVChar(init)){}
