@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 
-#ifndef CLIENT_TCP_HPP_INCLUDED
 typedef std::vector<char> VCHAR;
 
 inline VCHAR StringToVChar(std::string const& str)
@@ -21,7 +20,6 @@ inline std::string VCharToString(VCHAR const & buffer)
         str+=i;
     return str;
 }
-#endif // CLIENT_TCP_HPP_INCLUDED
 
 class Tram
 {
@@ -81,11 +79,11 @@ class Tram
 
             return t;
         }
-	Tram operator+(char const & add)
+        Tram operator+(char const & add)
         {
             Tram t(*this);
 
-            t.get_data().push_back(i);
+            t.get_data().push_back(add);
 
             return t;
         }
@@ -113,7 +111,7 @@ class Tram
         }
 	Tram operator+=(char const & add)
         {
-            this->m_data.push_back(i);
+            this->m_data.push_back(add);
 
             return *this;
         }
