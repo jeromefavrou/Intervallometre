@@ -3,8 +3,14 @@
 
 std::vector<std::string> ls(std::string const & file)noexcept
 {
+    std::string cmd("");
+
+    #ifdef __linux ||  __unix || __linux__
+    cmd="ls";
+    #endif // __linux
+
     ///extraction de la commande ls de unix dans un fichier temporaire
-    system(std::string("ls "+file+" > tps_ls.cmd_unix").c_str());
+    system(std::string(cmd+" "+file+" > tps_ls.cmd_unix").c_str());
 
     ///importation du resultat dans la memoire vive du programme
     std::vector<std::string> mem_ls;
@@ -21,11 +27,11 @@ std::vector<std::string> ls(std::string const & file)noexcept
     }
     catch(std::system_error& e)
     {
-        std::cerr <<file+"-echec listing (ls): " << e.what() <<std::endl;
+        std::cerr <<file+"-echec listing ("+cmd+"): " << e.what() <<std::endl;
     }
     catch(std::exception const & e)
     {
-        std::cerr <<file+"-echec listing (ls): " << e.what() <<std::endl;
+        std::cerr <<file+"-echec listing ("+cmd+"): " << e.what() <<std::endl;
     }
 
     ///supression du fichier temporaire

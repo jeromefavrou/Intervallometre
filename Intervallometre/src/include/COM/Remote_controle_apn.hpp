@@ -76,7 +76,7 @@ public:
     }
 
 ///-------------------------------------------------------------
-///cree un client et se connecte au serveur
+///cree un client et se connecte au serveur et envoie les info de bases
 ///-------------------------------------------------------------
     bool connect(std::string const & ip,uint32_t const & port)
     {
@@ -89,6 +89,20 @@ public:
                 this->m_client->NewSocket(this->m_id_client);
 
                 this->m_client->Connect(this->m_id_client,ip,port,CSocketTCPClient::IP);
+
+
+                VCHAR rep_tram;
+                this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Older,this->older?'1':'0',Tram::Com_bytes::EOT}).get_c_data());
+                this->m_client->Read<2048>(this->m_id_client,rep_tram);
+                if(!this->check_acknowledge(rep_tram))throw std::string("erreur de transmition");
+
+                this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Tcp_client,'0',Tram::Com_bytes::EOT}).get_c_data());
+                this->m_client->Read<2048>(this->m_id_client,rep_tram);
+                if(!this->check_acknowledge(rep_tram))throw std::string("erreur de transmition");
+
+                this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Debug_mode,this->debug_mode?'1':'0',Tram::Com_bytes::EOT}).get_c_data());
+                this->m_client->Read<2048>(this->m_id_client,rep_tram);
+                if(!this->check_acknowledge(rep_tram))throw std::string("erreur de transmition");
 
                 return true;
             }
@@ -146,59 +160,7 @@ public:
             VCHAR rep_tram;
             this->m_client->Read<2048>(this->m_id_client,rep_tram);
 
-            if(rep_tram.size()>0)
-            {
-                if(rep_tram[0]==Tram::Com_bytes::SOH && rep_tram.back()==Tram::Com_bytes::EOT)
-                {
-                    if(static_cast<int>(rep_tram[1])==Tram::Com_bytes::ACK)
-                        return true;
-                    else if(static_cast<int>(rep_tram[1])==Tram::Com_bytes::NAK)
-                    {
-                        if(this->debug_mode)
-                        {
-                            std::cerr <<"erreur renvoyer par le serveur: " ;
-
-                            for(auto &t : rep_tram)
-                            {
-                                if(t==Tram::Com_bytes::EOT)
-                                    break;
-                                if(t==Tram::Com_bytes::SOH)
-                                    continue;
-
-                                std::cerr << t ;
-                            }
-
-                            std::cerr<<std::endl;
-                        }
-
-                        return false;
-                    }
-                    else
-                    {
-                        if(this->debug_mode)
-                        {
-                            std::cerr <<"erreur de tram avec le serveur"<<std::endl;
-
-                            for(auto &t : rep_tram)
-                                std::cerr << "0x" << std::hex << static_cast<int>(t) << std::dec <<" ";
-                            std::cerr<<std::endl;
-                        }
-
-                        return false;
-                    }
-                }
-                else
-                {
-                    if(this->debug_mode)
-                        std::cerr << " header et footer tram non respecté par le serveur"<<std::endl;
-                    return false;
-                }
-            }
-            else
-            {
-                std::cout <<"erreur de connection avec le serveur" <<std::endl;
-                return false;
-            }
+            return this->check_acknowledge(rep_tram);
         }
 
         //lecture du resultat
@@ -302,6 +264,26 @@ public:
         return this->m_void;
     }
 ///-------------------------------------------------------------
+///renvoie le byte associer pour un paramatre de l'apn (sans passer par gphoto2 seulement donné sauvegarder en memoire)
+///-------------------------------------------------------------
+    char get_byte(RC_Apn::Parameter const & param)
+    {
+        switch(param)
+        {
+            case RC_Apn::Parameter::APERTURE: return RC_Apn::Com_bytes::Aperture; break;
+            case RC_Apn::Parameter::SHUTTERSPEED: return RC_Apn::Com_bytes::Shutterspeed; break;
+            case RC_Apn::Parameter::ISO: return RC_Apn::Com_bytes::Iso; break;
+            case RC_Apn::Parameter::FORMAT: return RC_Apn::Com_bytes::Format; break;
+            case RC_Apn::Parameter::TARGET: return RC_Apn::Com_bytes::Target; break;
+            case RC_Apn::Parameter::WHITE_BALANCE: return RC_Apn::Com_bytes::White_balance; break;
+            case RC_Apn::Parameter::PICTURE_STYLE: return RC_Apn::Com_bytes::Picture_style; break;
+            case RC_Apn::Parameter::FILE: return RC_Apn::Com_bytes::File; break;
+
+            default : return static_cast<char>(0x00);
+        }
+        return static_cast<char>(0x00);
+    }
+///-------------------------------------------------------------
 ///passe un parametre en sa valeur string pour gphoto2
 ///-------------------------------------------------------------
     static std::string parameter_to_string(RC_Apn::Parameter const & param)
@@ -388,7 +370,7 @@ public:
     std::vector<std::string> get_config(RC_Apn::Parameter const & param)
     {
         //on eregistre via gphoto2 les  valeurs possible de l'apn sur disque
-
+        std::vector<std::string> gc;
         if(!this->tcp_client)
         {
             //si liaison direct
@@ -400,10 +382,25 @@ public:
         }
         else
         {
-            //envoir et reception du server par le client
+            VCHAR rep_tram;
+
+            this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Get_Config,this->get_byte(param),Tram::Com_bytes::EOT}).get_c_data());
+
+            this->m_client->Read<2048>(this->m_id_client,rep_tram);
+
+            if(!this->check_acknowledge(rep_tram))
+            {
+                if(this->debug_mode)
+                    std::cout << "erreur de transmition"<<std::endl;
+
+            }
+
+            //lecture de gc
+
+            return gc;
         }
 
-        std::vector<std::string> gc;
+
 
         //on lit les valeur de parametre et on trie juste les donné adequate
         std::fstream If("buff",std::ios::in);
@@ -446,6 +443,68 @@ public:
         system(std::string(cmd+std::string(!this->debug_mode?" > free_cmd":"")).c_str());
 
         std::remove("free_cmd");
+    }
+
+///-------------------------------------------------------------
+///verifie si la reponse du serveur est conforme
+///-------------------------------------------------------------
+    bool check_acknowledge(VCHAR const & rep_tram)
+    {
+        if(rep_tram.size()>0)
+        {
+            if(rep_tram[0]==Tram::Com_bytes::SOH && rep_tram.back()==Tram::Com_bytes::EOT)
+            {
+                if(static_cast<int>(rep_tram[1])==Tram::Com_bytes::ACK)
+                    return true;
+                else if(static_cast<int>(rep_tram[1])==Tram::Com_bytes::NAK)
+                {
+                    if(this->debug_mode)
+                    {
+                        std::cerr <<"erreur renvoyer par le serveur: " ;
+
+                        for(auto &t : rep_tram)
+                        {
+                            if(t==Tram::Com_bytes::EOT)
+                                break;
+                            if(t==Tram::Com_bytes::SOH)
+                                continue;
+
+                            std::cerr << t ;
+                        }
+
+                        std::cerr<<std::endl;
+                    }
+
+                    return false;
+                }
+                else
+                {
+                    if(this->debug_mode)
+                    {
+                        std::cerr <<"erreur de tram avec le serveur"<<std::endl;
+
+                        for(auto &t : rep_tram)
+                            std::cerr << "0x" << std::hex << static_cast<int>(t) << std::dec <<" ";
+                        std::cerr<<std::endl;
+                    }
+
+                    return false;
+                }
+            }
+            else
+            {
+                if(this->debug_mode)
+                    std::cerr << " header et footer tram non respecté par le serveur"<<std::endl;
+                return false;
+            }
+        }
+        else
+        {
+            std::cout <<"erreur de connection avec le serveur" <<std::endl;
+            return false;
+        }
+
+        return false;
     }
 
     ///donné de sauvegarde parametre apn

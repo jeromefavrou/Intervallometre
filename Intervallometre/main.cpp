@@ -25,11 +25,11 @@ int main(int argc,char ** argv)
         std::string addr(""),mt;
         uint32_t port(0);
 
-        std::fstream If("server",std::ios::in);
+        std::fstream If("client.conf",std::ios::in);
 
         if(!If)
         {
-            std::cerr << "fichier de config serveur introuvable" << std::endl;
+            std::cerr << "fichier de config client introuvable" << std::endl;
             return -1;
         }
 
@@ -38,7 +38,7 @@ int main(int argc,char ** argv)
             If >> addr;
         else
         {
-            std::cerr << "fichier de config serveur corrompue" << std::endl;
+            std::cerr << "fichier de config client corrompue" << std::endl;
             return -1;
         }
 
@@ -53,9 +53,11 @@ int main(int argc,char ** argv)
 
         if(!apn.connect(addr,port))
         {
-            std::cerr << "connection impossible: " << addr <<":"<< port << " -> verifié les parametres du ficher de config server"<<std::endl;
+            std::cerr << "connection impossible: " << addr <<":"<< port << " -> verifié les parametres du ficher de config client si connection NOK debug mode pour plus d'info"<<std::endl;
             return -1;
         }
+
+
     }
 
     if(parser::find("--version",Parametre) || parser::find("-v",Parametre))
@@ -100,7 +102,7 @@ int main(int argc,char ** argv)
 
         return -1;
     }
-
+apn.init_parameter();
     if(!inter.load("Sequance_2"))
     {
         std::cerr << "aucune sequance détectée" << std::endl;
@@ -113,7 +115,7 @@ int main(int argc,char ** argv)
         return -1;
     }
 
-    apn.init_parameter();
+
 
     std::cout << inter.size() <<" instructions chargées" << std::endl<<std::endl;
 

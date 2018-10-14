@@ -1,6 +1,7 @@
 #ifndef CLIENT_TCP_HPP_INCLUDED
 #define CLIENT_TCP_HPP_INCLUDED
 
+#ifdef __linux ||  __unix || __linux__
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -11,6 +12,8 @@
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
 #define closesocket(s) close(s)
+
+#endif
 
 typedef int SOCKET;
 typedef struct sockaddr_in SOCKADDR_IN;
