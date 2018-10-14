@@ -8,3 +8,4 @@ fichier de conf serveur <br>
 fichier de conf client revoir ext <br>
 rapatriment donné ?<br>
 serveur garde donné local ? <br>
+signal sonor <br>
