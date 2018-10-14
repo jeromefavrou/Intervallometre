@@ -6,21 +6,6 @@
 
 typedef std::vector<char> VCHAR;
 
-inline VCHAR StringToVChar(std::string const& str)
-{
-    VCHAR buffer;
-    for(auto i:str)
-        buffer.push_back(i);
-    return buffer;
-}
-inline std::string VCharToString(VCHAR const & buffer)
-{
-    std::string str="";
-    for(auto i:buffer)
-        str+=i;
-    return str;
-}
-
 class Tram
 {
     public:
@@ -36,7 +21,7 @@ class Tram
         };
         Tram(void){}
         Tram(Tram const & cpy):m_data(cpy.get_c_data()){}
-        Tram(std::string const & init):m_data(StringToVChar(init)){}
+        Tram(std::string init):m_data(VCHAR(init.begin(),init.end())){}
         Tram(VCHAR const & init):m_data(init){}
 
         Tram operator=(Tram const & cpy)
@@ -44,9 +29,9 @@ class Tram
             this->m_data=cpy.get_c_data();
             return *this;
         }
-        Tram operator=(std::string const & init)
+        Tram operator=(std::string init)
         {
-            this->m_data=StringToVChar(init);
+            this->m_data=VCHAR(init.begin(),init.end());
             return *this;
         }
         Tram operator=(VCHAR const & init)
