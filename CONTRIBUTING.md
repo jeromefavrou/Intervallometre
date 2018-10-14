@@ -9,3 +9,4 @@ fichier de conf client revoir ext <br>
 rapatriment donné ?<br>
 serveur garde donné local ? <br>
 signal sonor <br>
+bug si telephone branché <br>
