@@ -10,3 +10,4 @@ rapatriment donné ?<br>
 serveur garde donné local ? <br>
 signal sonor <br>
 bug si telephone branché <br>
+bug lecture get_config <br>
