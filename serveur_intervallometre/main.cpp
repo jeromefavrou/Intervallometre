@@ -60,6 +60,28 @@ Tram interpretteur(VCHAR const & tram, RC_Apn & apn)
         else if(static_cast<int>(tram[i])==RC_Apn::Com_bytes::Download_And_Remove)
         {
         }
+        else if(static_cast<int>(tram[i])==RC_Apn::Com_bytes::Older)
+        {
+            i++;
+            apn.older=tram[i]=='1'?true:false;
+
+            return Tram(VCHAR{Tram::Com_bytes::SOH,Tram::Com_bytes::ACK,Tram::Com_bytes::EOT});
+        }
+        else if(static_cast<int>(tram[i])==RC_Apn::Com_bytes::Tcp_client)
+        {
+            i++;
+            apn.tcp_client=tram[i]=='1'?true:false;
+
+            return Tram(VCHAR{Tram::Com_bytes::SOH,Tram::Com_bytes::ACK,Tram::Com_bytes::EOT});
+
+        }
+        else if(static_cast<int>(tram[i])==RC_Apn::Com_bytes::Debug_mode)
+        {
+            i++;
+            apn.debug_mode=tram[i]=='1'?true:false;
+
+            return Tram(VCHAR{Tram::Com_bytes::SOH,Tram::Com_bytes::ACK,Tram::Com_bytes::EOT});
+        }
 
     }
 
