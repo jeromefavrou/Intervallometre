@@ -7,6 +7,7 @@
 #include <thread>
 #include <sstream>
 #include <memory>
+#include "tram.hpp"
 #include "client_tcp.hpp"
 
 class RC_Apn
@@ -26,26 +27,26 @@ public:
     class Com_bytes
     {
     public:
-        static char const Check_Apn=0x3A; //check apn
-        static char const Set_Config=0x3B; //set config
-        static char const Get_Config=0x3C; //get config
-        static char const Capture_Eos_Dslr=0x3D; //capture eos dslr
-        static char const Download=0x3E; //download
-        static char const Download_And_Remove=0x3F; //download and remove
+        static char constexpr Check_Apn=0x3A; //check apn
+        static char constexpr  Set_Config=0x3B; //set config
+        static char constexpr  Get_Config=0x3C; //get config
+        static char constexpr  Capture_Eos_Dslr=0x3D; //capture eos dslr
+        static char constexpr  Download=0x3E; //download
+        static char constexpr  Download_And_Remove=0x3F; //download and remove
 
-        static char const Aperture=0x61;
-        static char const Shutterspeed=0x62;
-        static char const Iso=0x63;
-        static char const Format=0x64;
-        static char const Target=0x65;
-        static char const White_balance=0x66;
-        static char const Picture_style=0x67;
-        static char const File=0x68;
-        static char const Older=0x69;
-        static char const Exposure=0x6A;
-        static char const Intervalle=0x6B;
-        static char const Debug_mode=0x6C;
-        static char const Tcp_client=0x6D;
+        static char constexpr  Aperture=0x61;
+        static char constexpr  Shutterspeed=0x62;
+        static char constexpr  Iso=0x63;
+        static char constexpr  Format=0x64;
+        static char constexpr  Target=0x65;
+        static char constexpr  White_balance=0x66;
+        static char constexpr  Picture_style=0x67;
+        static char constexpr  File=0x68;
+        static char constexpr  Older=0x69;
+        static char constexpr  Exposure=0x6A;
+        static char constexpr  Intervalle=0x6B;
+        static char constexpr  Debug_mode=0x6C;
+        static char constexpr  Tcp_client=0x6D;
     };
 
 
@@ -215,12 +216,27 @@ public:
         }
         else
         {
-            VCHAR tram{0x09,0x01,'\n',0x10,'\n',0x11,'\n',0x12,'\n',0x0d};
+            Tram tram,rep_tram;
 
-            //envoie la demande de chack apn au serveur
-            this->m_client->Write(this->m_id_client,tram);
+            tram+=char(Tram::Com_bytes::SOH);
+            tram+=char(RC_Apn::Com_bytes::Capture_Eos_Dslr);
+            tram+=char(RC_Apn::Com_bytes::Exposure);
+            tram+=exposure;
+            tram+=char(Tram::Com_bytes::US);
+            tram+=char(RC_Apn::Com_bytes::Intervalle);
+            tram+=inter;
+            tram+=char(Tram::Com_bytes::EOT);
+
+            this->m_client->Write(this->m_id_client,tram.get_data());
+
+            this->m_client->Read<2048>(this->m_id_client,rep_tram.get_data());
+
+            if(!this->check_acknowledge(rep_tram.get_data()))
+            {
+                if(this->debug_mode)
+                    std::cout << "erreur de transmition"<<std::endl;
+            }
         }
-
     }
 
 ///-------------------------------------------------------------
@@ -237,9 +253,23 @@ public:
         }
         else
         {
-            VCHAR tram{0x09,0x02,'\n',0x20,'\n',0x21,'\n',0x22,'\n',0x23,'\n',0x24,'\n',0x25,'\n',0x26,'\n',0x0d};
+            Tram tram,rep_tram;
 
-            this->m_client->Write(this->m_id_client,tram);
+            tram+=char(Tram::Com_bytes::SOH);
+            tram+=char(RC_Apn::Com_bytes::Set_Config);
+            tram+=this->get_byte(param);
+            tram+=value;
+            tram+=char(Tram::Com_bytes::EOT);
+
+            this->m_client->Write(this->m_id_client,tram.get_data());
+
+            this->m_client->Read<2048>(this->m_id_client,rep_tram.get_data());
+
+            if(!this->check_acknowledge(rep_tram.get_data()))
+            {
+                if(this->debug_mode)
+                    std::cout << "erreur de transmition"<<std::endl;
+            }
         }
     }
 
@@ -311,7 +341,7 @@ public:
         unsigned int id(0);
 
         //on extrait l'id correspondant a la chaine de caractere
-        for(auto i=0;i<this->m_file.size();i++)
+        for(auto i=0u;i<this->m_file.size();i++)
         {
             if(m_file[i]==why)
             {
