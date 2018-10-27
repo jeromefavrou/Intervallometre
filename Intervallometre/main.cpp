@@ -17,8 +17,8 @@ int main(int argc,char ** argv)
     apn.tcp_client= parser::find("--tcp-client",Parametre) || parser::find("-t",Parametre);
     apn.older=parser::find("--old-apn",Parametre) || parser::find("-o",Parametre);
 
-    apn.tcp_client=true;
-    apn.debug_mode=true;
+    //apn.tcp_client=true;
+    //apn.debug_mode=true;
 
     if(apn.tcp_client)
     {
