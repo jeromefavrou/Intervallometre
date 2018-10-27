@@ -115,7 +115,7 @@ class CSocketTCPClient
             throw std::range_error("cannot use a Socket not open");
 
         int lenght= recv(*Sk_Channel[idx] ,buf,octets,0);
-        for(auto i=0u;i<lenght;i++)
+        for(auto i=0;i<lenght;i++)
             buffer.push_back(buf[i]);
         return lenght;
     }

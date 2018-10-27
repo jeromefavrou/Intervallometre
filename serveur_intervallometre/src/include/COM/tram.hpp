@@ -13,11 +13,11 @@ class Tram
         class Com_bytes
         {
         public:
-            static char const SOH=0x01; //Start of Heading
-            static char const EOT=0x04; //End of Transmission
-            static char const ACK=0x06; //Acknowledge
-            static char const NAK=0x15; //Negative Acknowledge
-            static char const US= 0x1F; //Unit Separator
+            static char constexpr SOH=0x01; //Start of Heading
+            static char constexpr EOT=0x04; //End of Transmission
+            static char constexpr ACK=0x06; //Acknowledge
+            static char constexpr NAK=0x15; //Negative Acknowledge
+            static char constexpr US= 0x1F; //Unit Separator
         };
         Tram(void){}
         Tram(Tram const & cpy):m_data(cpy.get_c_data()){}
