@@ -388,9 +388,40 @@ public:
         }
         else
         {
-            ///VCHAR tram{0x09,0x02,'\n',0x20,'\n',0x21,'\n',0x22,'\n',0x23,'\n',0x24,'\n',0x25,'\n',0x26,'\n',0x0d};
+            Tram tram,rep_tram;
+            tram+=char(Tram::Com_bytes::SOH);
+            tram+=char(!this->download_and_remove?RC_Apn::Com_bytes::Download:RC_Apn::Com_bytes::Download_And_Remove);
+            tram+=why;
+            tram+=char(Tram::Com_bytes::EOT);
+
             //envoir et reception du server par le client
-            ///this->m_client->Write(this->m_id_client,tram);
+            this->m_client->Write(this->m_id_client,tram.get_data());
+
+
+            std::string name("");
+            //titre this->m_client->Read<2048>(this->m_id_client,rep_tram.get_data());
+            VCHAR Data=VCHAR();
+
+            while(true)
+            {
+                this->m_client->Read<2048>(this->m_id_client,rep_tram.get_data());
+
+
+                if(!this->check_acknowledge(rep_tram.get_data()))
+                {
+                    if(this->debug_mode)
+                        std::cout << "erreur de transmition"<<std::endl;
+                    break;
+                }
+                else
+                    Data.insert(Data.end(),rep_tram.get_data().begin(),rep_tram.get_data().end());
+
+
+                if(rep_tram.get_data().back()==Tram::Com_bytes::EOT)
+                    break;
+            }
+
+            rep_tram=Data;
         }
     }
 
