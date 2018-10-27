@@ -1,8 +1,9 @@
 #include <iostream>
 #include <array>
-#include "serveur.cpp"
-#include "Remote_controle_apn.hpp"
-#include "tram.hpp"
+#include "src/include/COM/serveur.cpp"
+#include "src/include/COM/Remote_controle_apn.hpp"
+#include "src/include/COM/tram.hpp"
+#include <fstream>
 
 #define SERVEUR_ID 0
 #define CLIENT_ID 1
@@ -10,12 +11,48 @@
 #define client 1
 #define continuer 0
 
+bool Read_raw(std::string const & raw_file,VCHAR &data)
+{
+    std::ifstream If(raw_file,std::ios::binary) ;
+
+    if(!If || If.fail())
+        return false;
+
+    char a;
+    data.clear();
+
+    while(If)
+    {
+        If.read(&a,1);
+        if(!If || If.eof())
+            break;
+        data.push_back(a);
+    }
+
+        return true;
+}
+
+bool Write_raw(std::string const & raw_file,VCHAR &data)
+{
+
+    std::ofstream Of(raw_file,std::ios::binary) ;
+
+    if(!Of || Of.fail())
+        return false;
+
+    for(auto & a : data)
+    {
+        Of.write(&a,1);
+    }
+
+        return true;
+}
+
 Tram interpretteur(VCHAR const & tram, RC_Apn & apn)
 {
     Tram t;
     if(tram[0] !=Tram::Com_bytes::SOH || tram.back() != Tram::Com_bytes::EOT)
     {
-        t;
         t+=char(Tram::Com_bytes::SOH);
         t+=char(Tram::Com_bytes::NAK);
         t+="header ou/et footer incorrect";
@@ -56,6 +93,28 @@ Tram interpretteur(VCHAR const & tram, RC_Apn & apn)
         }
         else if(static_cast<int>(tram[i])==RC_Apn::Com_bytes::Download)
         {
+            //telecherger depuis apn directe ou gphoto
+
+            VCHAR data;
+            t.clear();
+            if(Read_raw("IMG_6569.CR2",data))
+            {
+                t+=char(Tram::Com_bytes::SOH);
+                t+=char(Tram::Com_bytes::ACK);
+                t+=data;
+                t+=char(Tram::Com_bytes::EOT);
+            }
+            else
+            {
+                t+=char(Tram::Com_bytes::SOH);
+                t+=char(Tram::Com_bytes::NAK);
+                t+="aucun raw n a pue etre telecharger";
+                t+=char(Tram::Com_bytes::EOT);
+
+                return t.get_data();
+            }
+
+            data.clear();
         }
         else if(static_cast<int>(tram[i])==RC_Apn::Com_bytes::Download_And_Remove)
         {
@@ -168,7 +227,7 @@ int main()
 
     try
     {
-        serveur.NewSocket(SERVEUR_ID);
+        /*serveur.NewSocket(SERVEUR_ID);
         serveur.BindServeur(SERVEUR_ID,INADDR_ANY,9876);
         serveur.Listen(SERVEUR_ID,1);
 
@@ -183,7 +242,23 @@ int main()
         Stats[continuer]=false;
 
 
-        Listen.join();
+        Listen.join();*/
+
+        VCHAR data;
+            if(Read_raw("IMG_6569.CR2",data))
+            {
+                if(Write_raw("IMG_6570.CR2",data))
+                    std::cout << " ok: " << data.size()<<std::endl;
+                else
+                    std::cout << " nok1: " << data.size()<<std::endl;
+            }
+            else
+            {
+                std::cout << " nok: " << data.size()<<std::endl;
+            }
+
+            data.clear();
+
     }
     catch(std::string const & error)
     {
