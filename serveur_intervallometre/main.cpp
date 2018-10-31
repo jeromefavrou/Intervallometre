@@ -227,7 +227,7 @@ int main()
 
     try
     {
-        /*serveur.NewSocket(SERVEUR_ID);
+        serveur.NewSocket(SERVEUR_ID);
         serveur.BindServeur(SERVEUR_ID,INADDR_ANY,9876);
         serveur.Listen(SERVEUR_ID,1);
 
@@ -242,9 +242,9 @@ int main()
         Stats[continuer]=false;
 
 
-        Listen.join();*/
+        Listen.join();
 
-        VCHAR data;
+        /*VCHAR data;
             if(Read_raw("IMG_6569.CR2",data))
             {
                 if(Write_raw("IMG_6570.CR2",data))
@@ -257,7 +257,7 @@ int main()
                 std::cout << " nok: " << data.size()<<std::endl;
             }
 
-            data.clear();
+            data.clear();*/
 
     }
     catch(std::string const & error)
