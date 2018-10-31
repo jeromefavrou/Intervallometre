@@ -23,10 +23,12 @@ typedef struct in_addr IN_ADDR;
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <chrono>
 #include <map>
 #include <vector>
 #include <string>
 #include <memory>
+#include <thread>
 #include "tram.hpp"
 
 class CSocketTCPClient
@@ -125,5 +127,55 @@ private:
     std::map<unsigned int,std::shared_ptr<SOCKET>> Sk_Channel;
     SOCKADDR_IN ServerAdress;
 };
+
+void ctrl_time_out(bool & stat,int const elaps_time)
+{
+    std::chrono::time_point<std::chrono::system_clock> start,check;
+
+    start=std::chrono::system_clock::now();
+
+    while(stat)
+    {
+        check=std::chrono::system_clock::now();
+
+        if(std::chrono::duration_cast<std::chrono::seconds>(check-start).count()>elaps_time)
+        {
+            stat=false;
+            break;
+        }
+
+        std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(50));//limit cpu
+    }
+}
+
+Tram Read_Tram(char const ending_byte,CSocketTCPClient & Client,int id_client,int const _time_out) throw(std::string)
+{
+    Tram data;
+
+    std::chrono::time_point<std::chrono::system_clock> start(std::chrono::system_clock::now()),check;
+    bool Do=true;
+
+    std::thread time_out(&ctrl_time_out,std::ref(Do),_time_out);
+
+    while(Do)
+    {
+        VCHAR tps;
+
+        Client.Read<2048>(id_client,tps);
+
+        data+=tps;
+
+        if(tps.back()==ending_byte)
+            break;
+    }
+
+    if(!Do)
+        throw std::string("communication time out");
+
+    Do=false;
+    time_out.join();
+
+    return data;
+}
 
 #endif // CLIENT_TCP_HPP_INCLUDED

@@ -158,10 +158,9 @@ public:
             this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Check_Apn,Tram::Com_bytes::EOT}).get_c_data());
 
             //attend la réponse
-            VCHAR rep_tram;
-            this->m_client->Read<2048>(this->m_id_client,rep_tram);
+            Tram rep_tram=Read_Tram(Tram::Com_bytes::EOT,*this->m_client,this->m_id_client,1);
 
-            return this->check_acknowledge(rep_tram);
+            return this->check_acknowledge(rep_tram.get_data());
         }
 
         //lecture du resultat
@@ -229,13 +228,7 @@ public:
 
             this->m_client->Write(this->m_id_client,tram.get_data());
 
-            this->m_client->Read<2048>(this->m_id_client,rep_tram.get_data());
-
-            if(!this->check_acknowledge(rep_tram.get_data()))
-            {
-                if(this->debug_mode)
-                    std::cout << "erreur de transmition"<<std::endl;
-            }
+            rep_tram=this->Recv(1);
         }
     }
 
@@ -263,13 +256,8 @@ public:
 
             this->m_client->Write(this->m_id_client,tram.get_data());
 
-            this->m_client->Read<2048>(this->m_id_client,rep_tram.get_data());
+            rep_tram=this->Recv(1);
 
-            if(!this->check_acknowledge(rep_tram.get_data()))
-            {
-                if(this->debug_mode)
-                    std::cout << "erreur de transmition"<<std::endl;
-            }
         }
     }
 
@@ -397,31 +385,10 @@ public:
             //envoir et reception du server par le client
             this->m_client->Write(this->m_id_client,tram.get_data());
 
-
             std::string name("");
             //titre this->m_client->Read<2048>(this->m_id_client,rep_tram.get_data());
-            VCHAR Data=VCHAR();
 
-            while(true)
-            {
-                this->m_client->Read<2048>(this->m_id_client,rep_tram.get_data());
-
-
-                if(!this->check_acknowledge(rep_tram.get_data()))
-                {
-                    if(this->debug_mode)
-                        std::cout << "erreur de transmition"<<std::endl;
-                    break;
-                }
-                else
-                    Data.insert(Data.end(),rep_tram.get_data().begin(),rep_tram.get_data().end());
-
-
-                if(rep_tram.get_data().back()==Tram::Com_bytes::EOT)
-                    break;
-            }
-
-            rep_tram=Data;
+            rep_tram=this->Recv(15);
         }
     }
 
@@ -443,18 +410,11 @@ public:
         }
         else
         {
-            VCHAR rep_tram;
+
 
             this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Get_Config,this->get_byte(param),Tram::Com_bytes::EOT}).get_c_data());
 
-            this->m_client->Read<2048>(this->m_id_client,rep_tram);
-
-            if(!this->check_acknowledge(rep_tram))
-            {
-                if(this->debug_mode)
-                    std::cout << "erreur de transmition"<<std::endl;
-
-            }
+            Tram rep_tram=this->Recv(1);
 
             //lecture de gc
 
@@ -568,6 +528,33 @@ public:
         return false;
     }
 
+///-------------------------------------------------------------
+///reception reponse serveur
+///-------------------------------------------------------------
+    Tram Recv(int time_out)
+    {
+        Tram rep_tram;
+        try
+        {
+            rep_tram=Read_Tram(Tram::Com_bytes::EOT,*this->m_client,this->m_id_client,time_out);
+
+            if(!this->check_acknowledge(rep_tram.get_data()))
+            {
+                if(this->debug_mode)
+                    std::cerr << "erreur de transmition"<<std::endl;
+            }
+        }
+        catch(std::string const & e)
+        {
+            std::cerr << e <<endl;
+        }
+        catch(std::exception const & e)
+        {
+            std::cerr << e.what() <<endl;
+        }
+
+        return rep_tram;
+    }
     ///donné de sauvegarde parametre apn
     std::vector<std::string> m_aperture;
     std::vector<std::string> m_shutterspeed;
