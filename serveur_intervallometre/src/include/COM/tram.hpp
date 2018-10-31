@@ -92,8 +92,7 @@ class Tram
         }
         Tram operator+=(VCHAR const & add)
         {
-            for(auto & i : add)
-                this->m_data.push_back(i);
+            this->m_data.insert(this->m_data.end(),add.begin(),add.end());
 
             return *this;
         }
