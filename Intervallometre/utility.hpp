@@ -41,4 +41,9 @@ std::vector<std::string> ls(std::string const & file)noexcept
     return mem_ls;
 }
 
+void notify_send(std::string const & msg)
+{
+    system(std::string("notify-send -u normal -i logo.png \"Intervallometre\" \""+msg+"\" -t 10").c_str());
+}
+
 #endif // UTILITY_HPP_INCLUDED

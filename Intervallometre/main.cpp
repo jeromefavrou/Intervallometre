@@ -17,7 +17,7 @@ int main(int argc,char ** argv)
     apn.tcp_client= parser::find("--tcp-client",Parametre) || parser::find("-t",Parametre);
     apn.older=parser::find("--old-apn",Parametre) || parser::find("-o",Parametre);
 
-    apn.tcp_client=true;
+    //apn.tcp_client=true;
     apn.debug_mode=true;
 
     if(apn.tcp_client)
@@ -30,6 +30,7 @@ int main(int argc,char ** argv)
         if(!If)
         {
             std::cerr << "fichier de config client introuvable" << std::endl;
+            notify_send("fichier de config client introuvable");
             return -1;
         }
 
@@ -39,6 +40,7 @@ int main(int argc,char ** argv)
         else
         {
             std::cerr << "fichier de config client corrompue" << std::endl;
+            notify_send("fichier de config client corrompue");
             return -1;
         }
 
@@ -47,13 +49,15 @@ int main(int argc,char ** argv)
             If >> port;
         else
         {
-            std::cerr << "fichier de config serveur corrompue" << std::endl;
+            std::cerr << "fichier de config client corrompue" << std::endl;
+            notify_send("fichier de config client corrompue");
             return -1;
         }
 
         if(!apn.connect(addr,port))
         {
             std::cerr << "connection impossible: " << addr <<":"<< port << " -> verifié les parametres du ficher de config client si connection NOK debug mode pour plus d'info"<<std::endl;
+            notify_send("connection impossible");
             return -1;
         }
 
@@ -85,7 +89,11 @@ int main(int argc,char ** argv)
         std::fstream If("Help",std::ios::in);
 
         if(!If)
+        {
             std::cerr << "aide introuvable" <<std::endl;
+            notify_send("aide introuvable");
+        }
+
         else
         {
             std::string line_h("");
@@ -99,19 +107,22 @@ int main(int argc,char ** argv)
     if(!apn.check_apn())
     {
         std::cerr << "aucun apn detecté" << std::endl;
+        notify_send("aucun apn detecté");
 
         return -1;
     }
-apn.init_parameter();
+    apn.init_parameter();
     if(!inter.load("Sequance_2"))
     {
         std::cerr << "aucune sequance détectée" << std::endl;
+        notify_send("aucune sequance détectée");
 
         return -1;
     }
     else if(!inter.check_sequance(apn))
     {
         std::cerr << "des erreurs ont été trouvées dans la séquance --debug-mode pour détails" << std::endl;
+        notify_send("des erreurs ont été trouvées dans la séquance");
         return -1;
     }
 
