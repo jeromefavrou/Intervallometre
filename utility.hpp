@@ -1,49 +1,48 @@
 #ifndef UTILITY_HPP_INCLUDED
 #define UTILITY_HPP_INCLUDED
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <cstdlib>
-#include <fstream>
-#include <chrono>
 #include <dirent.h>
 
-namespace cmd_unix
+std::vector<std::string> ls(std::string const & file)noexcept
 {
-    std::vector<std::string> ls(std::string const & file)noexcept;
-    void notify_send(std::string const & msg)noexcept;
-}
-namespace timer
-{
-    //void lim_cpu(std::chrono::duration const & en)noexcept;
-    //ton
-    //tof
-}
-
-template<class T> T Extract_one_data(std::string const & file)noexcept
-{
-    std::fstream If;
-    T data;
-
-    If.exceptions(std::ifstream::badbit);
+    ///importation du resultat dans la memoire vive du programme
+    std::vector<std::string> mem_ls;
 
     try
     {
-        If.open(file,std::ios::in);
+        DIR & rep = *opendir(std::string(file+".").c_str());
 
-        If >> data;
+        if (&rep != nullptr)
+        {
+            struct dirent * ent;
+
+            while ((ent = readdir(&rep)) != nullptr)
+            {
+                if(std::string(ent->d_name)=="." || std::string(ent->d_name)=="..")
+                    continue;
+                else
+                    mem_ls.push_back(ent->d_name);
+            }
+
+            closedir(&rep);
+        }
     }
     catch(std::system_error& e)
     {
-        std::cerr <<file+"-echec ectract: " << e.what() <<std::endl;
+        std::cerr <<file+"-echec listing (ls): " << e.what() <<std::endl;
     }
     catch(std::exception const & e)
     {
-        std::cerr <<file+"-echec extract: " << e.what() <<std::endl;
+        std::cerr <<file+"-echec listing (ls): " << e.what() <<std::endl;
     }
 
-    return data;
+    ///retour du resultat
+    return mem_ls;
+}
+
+void notify_send(std::string const & msg)
+{
+    system(std::string("notify-send -u normal -i logo.png \"Intervallometre\" \""+msg+"\" -t 10").c_str());
 }
 
 #endif // UTILITY_HPP_INCLUDED
