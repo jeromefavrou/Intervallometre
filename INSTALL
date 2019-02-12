@@ -1,10 +1,11 @@
 
-mkdir -vp obj/Release
+mkdir -vp obj/Release/Src
 
-g++ -Wall -fexceptions -O3 -Wnon-virtual-dtor -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -Wextra -m64 -IIntervallometre -I../../../../usr/local/include/opencv4 -I../../../../usr/local/include -c /home/rigel/Dev/Intervallometre/main.cpp -o obj/Release/main.o
+g++ -Wall -fexceptions -O3 -Wnon-virtual-dtor -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -Wextra -m64 -IInclude -I../../../../../usr/local/include/opencv4 -I../../../../../usr/local/include -c /home/rigel/Dev/Intervallometre/Intervallometre/Src/main.cpp -o obj/Release/Src/main.o
+
+g++ -Wall -fexceptions -O3 -Wnon-virtual-dtor -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -Wextra -m64 -IInclude -I../../../../../usr/local/include/opencv4 -I../../../../../usr/local/include -c /home/rigel/Dev/Intervallometre/Intervallometre/Src/Tram.cpp -o obj/Release/Src/Tram.o
 
 mkdir -vp bin/Release
 
-
-g++  -o bin/Release/EOS_Astro obj/Release/main.o  -s -m64 -lpthread  ../../../../usr/local/lib/libraw.so ../../../../usr/local/lib/libraw_r.so ../../../../usr/local/lib/libopencv_core.so ../../../../usr/local/lib/libopencv_highgui.so ../../../../usr/local/lib/libopencv_imgproc.so ../../../../usr/local/lib/libopencv_videoio.so
+g++  -o bin/Release/EOS_Astro obj/Release/Src/main.o obj/Release/Src/Tram.o  -s -m64 -lpthread  ../../../../../usr/local/lib/libopencv_core.so ../../../../../usr/local/lib/libopencv_highgui.so ../../../../../usr/local/lib/libopencv_imgproc.so ../../../../../usr/local/lib/libopencv_videoio.so ../../../../../usr/local/lib/libraw.so ../../../../../usr/local/lib/libraw_r.so
 
