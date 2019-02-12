@@ -1,7 +1,7 @@
 #ifndef CLIENT_TCP_HPP_INCLUDED
 #define CLIENT_TCP_HPP_INCLUDED
 
-#ifdef __linux ||  __unix || __linux__
+#ifndef WIN32
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -148,7 +148,7 @@ void ctrl_time_out(bool & stat,int const elaps_time)
     }
 }
 
-Tram Read_Tram(char const ending_byte,CSocketTCPClient & Client,int id_client,int const _time_out) throw(std::string)
+Tram Read_Tram(char const ending_byte,CSocketTCPClient & Client,int id_client,int const _time_out)
 {
     Tram data;
 

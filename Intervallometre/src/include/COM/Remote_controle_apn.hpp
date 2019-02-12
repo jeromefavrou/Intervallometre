@@ -546,11 +546,11 @@ public:
         }
         catch(std::string const & e)
         {
-            std::cerr << e <<endl;
+            std::cerr << e <<std::endl;
         }
         catch(std::exception const & e)
         {
-            std::cerr << e.what() <<endl;
+            std::cerr << e.what() <<std::endl;
         }
 
         return rep_tram;

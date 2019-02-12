@@ -1,7 +1,6 @@
 #include "Intervallometre.hpp"
 #include "parser.hpp"
 
-
 int main(int argc,char ** argv)
 {
     std::vector<std::string> Parametre=parser::parser(argc,argv);
@@ -18,11 +17,11 @@ int main(int argc,char ** argv)
     apn.older=parser::find("--old-apn",Parametre) || parser::find("-o",Parametre);
 
     //apn.tcp_client=true;
-    apn.debug_mode=true;
+    //apn.debug_mode=true;
 
     if(apn.tcp_client)
     {
-        std::string addr(""),mt;
+        std::string addr(""),mt("");
         uint32_t port(0);
 
         std::fstream If("client.conf",std::ios::in);

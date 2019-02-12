@@ -2,7 +2,7 @@
 #define GNU_HPP_INCLUDED
 
 #include <vector>
-#include <opencv2/highgui/highgui_c.h>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/videoio/videoio.hpp>
 #include "raw_import.hpp"
 
@@ -21,10 +21,10 @@ class GUI
         std::string t_capt("");
         int luminosite(50),contraste(50);
 
-        cv::namedWindow(m_name_red_windows,CV_WINDOW_FREERATIO);
-        cv::namedWindow(m_name_blue_windows,CV_WINDOW_FREERATIO);
-        cv::namedWindow(m_name_green_windows,CV_WINDOW_FREERATIO);
-        cv::namedWindow(m_name_full_windows,CV_WINDOW_FREERATIO);
+        cv::namedWindow(m_name_red_windows,cv::WINDOW_FREERATIO);
+        cv::namedWindow(m_name_blue_windows,cv::WINDOW_FREERATIO);
+        cv::namedWindow(m_name_green_windows,cv::WINDOW_FREERATIO);
+        cv::namedWindow(m_name_full_windows,cv::WINDOW_FREERATIO);
 
         cv::resizeWindow(m_name_red_windows, 467, 350);
         cv::resizeWindow(m_name_blue_windows, 467, 350);
@@ -42,9 +42,9 @@ class GUI
 
             int radius=image.get_resolution().x/16;
 
-            cv::circle(image.data(),image.get_resolution()/2,radius,cv::Scalar( 0, 0, 255 ),7,CV_AA);
-            cv::line(image.data(), image.get_resolution()/2+cv::Point(0,radius/5), image.get_resolution()/2+cv::Point(0,radius), cv::Scalar( 255, 0, 0 ), 5, CV_AA);
-            cv::line(image.data(), image.get_resolution()/2+cv::Point(radius/5,0), image.get_resolution()/2+cv::Point(radius,0), cv::Scalar( 0, 255, 0 ), 5, CV_AA);
+            cv::circle(image.data(),image.get_resolution()/2,radius,cv::Scalar( 0, 0, 255 ),7,cv::LINE_AA);
+            cv::line(image.data(), image.get_resolution()/2+cv::Point(0,radius/5), image.get_resolution()/2+cv::Point(0,radius), cv::Scalar( 255, 0, 0 ), 5, cv::LINE_AA);
+            cv::line(image.data(), image.get_resolution()/2+cv::Point(radius/5,0), image.get_resolution()/2+cv::Point(radius,0), cv::Scalar( 0, 255, 0 ), 5, cv::LINE_AA);
 
             std::vector<cv::Mat> rgbChannels(3);
 
@@ -106,10 +106,10 @@ class GUI
         int calibration(1),t_calibration(1);
         int luminosite(50),contraste(50);
 
-        cv::namedWindow(m_name_red_windows,CV_WINDOW_FREERATIO);
-        cv::namedWindow(m_name_blue_windows,CV_WINDOW_FREERATIO);
-        cv::namedWindow(m_name_green_windows,CV_WINDOW_FREERATIO);
-        cv::namedWindow(m_name_full_windows,CV_WINDOW_FREERATIO);
+        cv::namedWindow(m_name_red_windows,cv::WINDOW_FREERATIO);
+        cv::namedWindow(m_name_blue_windows,cv::WINDOW_FREERATIO);
+        cv::namedWindow(m_name_green_windows,cv::WINDOW_FREERATIO);
+        cv::namedWindow(m_name_full_windows,cv::WINDOW_FREERATIO);
 
         cv::resizeWindow(m_name_red_windows, 467, 350);
         cv::resizeWindow(m_name_blue_windows, 467, 350);
