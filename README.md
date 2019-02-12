@@ -2,7 +2,7 @@
 # Intervallometre
 
 -----------------
-* compilation release (compilation dans .../bin/Release
+* compilation release (compilation dans .../bin/Release)
 -----------------
 1. chmod +x ./INSTALL
 2. ./INSTALL
@@ -39,6 +39,4 @@
 19. sudo make install
 20. cd ..
 21. sudo rm -r LibRaw
-22. chmod +x ./Intervallometre
 23. sudo /sbin/ldconfig -v
-24. ./Intervallometre
