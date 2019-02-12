@@ -1,5 +1,12 @@
 
 # Intervallometre
+
+-----------------
+* compilation release (compilation dans .../bin/Release
+-----------------
+1. chmod +x ./INSTALL
+2. ./INSTALL
+
 -----------------
 * installation automatique linux_64 (ex pour ubuntu): non opérationelle
 -----------------
