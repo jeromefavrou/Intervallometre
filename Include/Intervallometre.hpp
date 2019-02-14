@@ -118,7 +118,7 @@ public:
         if(this->debug_mode)
             std::cout << " La sequance commance" <<std::endl<<std::endl;
 
-            std::string rep_directory("");
+        std::string rep_directory("");
 
         for(auto & seq:this->m_seq)
         {
@@ -136,7 +136,9 @@ public:
                     std::cout<<std::endl << "Attendre " << seq.delay <<" s"<<std::endl<<std::endl;
                     std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(seq.delay*1000));
                 }
-
+            }
+            else
+            {
                 if(seq.work_dir!="-1") // gere le repertoire de travaille
                 {
                     bool d(false),o(false),f(false),l(false);
@@ -168,11 +170,9 @@ public:
 
                     rep_directory=seq.work_dir;
                 }
+                else
+                    return ;
 
-
-            }
-            else
-            {
                 for(auto i=0;i<seq.frame;i++)//execute n fois une instruction grace au parametre frame
                 {
                     std::cout <<std::endl<< "frame "<<i+1<<"/"<<seq.frame<<std::endl;
@@ -337,8 +337,9 @@ public:
                 {
                     std::cerr << "ligne " << line << " erreur pour REP_DIRECTORY "<<i.work_dir<<" introuvable"<<std::endl;
                     check=false;
-                }
 
+                    i.work_dir= "-1";
+                }
                 else
                     std::remove(std::string(i.work_dir+"test_dir").c_str());
             }

@@ -360,10 +360,7 @@ public:
 ///-------------------------------------------------------------
     void download(unsigned int why)
     {
-        std::stringstream cast;
-        cast << why;
-        std::string fcast("");
-        cast >> fcast;
+        std::string fcast=ss_cast<unsigned int,std::string>(why);
 
         //on telecharge
 
@@ -420,9 +417,6 @@ public:
 
             return gc;
         }
-
-
-
         //on lit les valeur de parametre et on trie juste les donné adequate
         std::fstream If("buff",std::ios::in);
 

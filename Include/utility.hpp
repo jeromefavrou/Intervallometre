@@ -2,47 +2,45 @@
 #define UTILITY_HPP_INCLUDED
 
 #include <dirent.h>
+#include <vector>
+#include <string>
+#include <exception>
+#include <system_error>
+#include <iostream>
+#include <sstream>
+enum unix_color{BLACK=40,RED,GREEN,BLEU,PINK,CYAN,GREY};
 
-std::vector<std::string> ls(std::string const & file)noexcept
+template<class T1,class T2> T2 ss_cast(T1 const & d)
 {
-    ///importation du resultat dans la memoire vive du programme
-    std::vector<std::string> mem_ls;
+    std::stringstream _ss_cast;
 
-    try
-    {
-        DIR & rep = *opendir(std::string(file+".").c_str());
+    _ss_cast << d;
 
-        if (&rep != nullptr)
-        {
-            struct dirent * ent;
+    T2 tps;
 
-            while ((ent = readdir(&rep)) != nullptr)
-            {
-                if(std::string(ent->d_name)=="." || std::string(ent->d_name)=="..")
-                    continue;
-                else
-                    mem_ls.push_back(ent->d_name);
-            }
+    _ss_cast >> tps;
 
-            closedir(&rep);
-        }
-    }
-    catch(std::system_error& e)
-    {
-        std::cerr <<file+"-echec listing (ls): " << e.what() <<std::endl;
-    }
-    catch(std::exception const & e)
-    {
-        std::cerr <<file+"-echec listing (ls): " << e.what() <<std::endl;
-    }
+    return tps;
+};
 
-    ///retour du resultat
-    return mem_ls;
+template<unix_color uc> std::string _print(std::string const & msg)
+{
+    std::string nwmsg("");
+
+    #ifndef WIN32
+    nwmsg+="\033[";
+    nwmsg+=ss_cast<unsigned int,std::string>(static_cast<unsigned int>(uc));
+    nwmsg+="m";
+    nwmsg+=msg;
+    nwmsg+="\033[0m";
+    #else
+    nwmsg=msg;
+    #endif // WIN32
+
+    return nwmsg;
 }
 
-void notify_send(std::string const & msg)
-{
-    system(std::string("notify-send -u normal -i logo.png \"Intervallometre\" \""+msg+"\" -t 10").c_str());
-}
+std::vector<std::string> ls(std::string const & file)noexcept;
+void notify_send(std::string const & msg);
 
 #endif // UTILITY_HPP_INCLUDED
