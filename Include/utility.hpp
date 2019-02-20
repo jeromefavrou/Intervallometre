@@ -6,9 +6,10 @@
 #include <string>
 #include <exception>
 #include <system_error>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
-enum unix_color{BLACK=40,RED,GREEN,BLEU,PINK,CYAN,GREY};
+enum unix_color{BLACK=40,RED,GREEN,BLUE,PINK,CYAN,GREY};
 
 template<class T1,class T2> T2 ss_cast(T1 const & d)
 {
@@ -42,5 +43,7 @@ template<unix_color uc> std::string _print(std::string const & msg)
 
 std::vector<std::string> ls(std::string const & file)noexcept;
 void notify_send(std::string const & msg);
+void free_cmd(std::string const & cmd,bool debug_mode);
+
 
 #endif // UTILITY_HPP_INCLUDED

@@ -41,3 +41,13 @@ void notify_send(std::string const & msg)
 {
     system(std::string("notify-send -u normal -i logo.png \"Intervallometre\" \""+msg+"\" -t 10").c_str());
 }
+
+///-------------------------------------------------------------
+///execute une commande sans afficher en terminal  sauf si debug-mode activé
+///-------------------------------------------------------------
+void free_cmd(std::string const & cmd,bool debug_mode)
+{
+    system(std::string(cmd+std::string(!debug_mode?" > free_cmd":"")).c_str());
+
+    std::remove("free_cmd");
+}

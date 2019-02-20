@@ -16,7 +16,7 @@ void CSocketTCPClient::NewSocket(unsigned int const &idx)
         throw std::string("Socket Serveur["+_print<unix_color::RED>("NOK")+"]");
 
     if(this->debug_mode)
-        std::clog<<"Socket ["<<idx<<"]["+_print<GREEN>("OK")+"]"<<std::endl;
+        std::clog<<"Socket ["<<idx<<"]["+_print<unix_color::GREEN>("OK")+"]"<<std::endl;
 }
 
 void CSocketTCPClient::CloseSocket(unsigned int const & idx)
@@ -56,9 +56,9 @@ void CSocketTCPClient::Connect(unsigned int const & idx,std::string const &addr,
     this->ServerAdress.sin_port=htons(port);
 
     if (connect(*Sk_Channel[idx] , (struct sockaddr *)&ServerAdress , sizeof(ServerAdress)) == SOCKET_ERROR)
-        throw std::string("Connection ["+_print<RED>("NOK")+"]");
+        throw std::string("Connection ["+_print<unix_color::RED>("NOK")+"]");
     if(this->debug_mode)
-        std::clog<<"Connection ["<<idx<<"]["+_print<GREEN>("OK")+"] => connected with: "<<addr<<":"<<port<<std::endl;
+        std::clog<<"Connection ["<<idx<<"]["+_print<unix_color::GREEN>("OK")+"] => connected with: "<<addr<<":"<<port<<std::endl;
 }
 
 void CSocketTCPClient::Write(unsigned int const &idx,VCHAR const & buffer)

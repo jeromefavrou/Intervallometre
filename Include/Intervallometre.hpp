@@ -139,7 +139,7 @@ public:
             }
             else
             {
-                if(seq.work_dir!="-1") // gere le repertoire de travaille
+                /*if(seq.work_dir!="-1") // gere le repertoire de travaille
                 {
                     bool d(false),o(false),f(false),l(false);
 
@@ -169,9 +169,8 @@ public:
                         std::cout << "changement de repertoire de travail: "<<seq.work_dir<<std::endl;
 
                     rep_directory=seq.work_dir;
-                }
-                else
-                    return ;
+                }*/
+
 
                 for(auto i=0;i<seq.frame;i++)//execute n fois une instruction grace au parametre frame
                 {
@@ -181,22 +180,15 @@ public:
                     {
                         std::cout <<"ne pas débrancher apn capture en cour iso: " << seq.iso << " exposition: "<<seq.exposure<<" ouverture: " <<seq.aperture <<std::endl;
 
-                        std::stringstream ss_t;
-                        ss_t << seq.exposure-1;
-                        std::string expo;
-                        ss_t >>expo;
-
-                        ss_t.clear();
-                        ss_t << seq.intervalle;
-                        std::string inter;
-                        ss_t >>inter;
+                        std::string expo=ss_cast<int,std::string>(seq.exposure-1);
+                        std::string inter=ss_cast<float,std::string>(seq.intervalle);
 
                         //capture
                         apn.capture_EOS_DSLR(inter,seq.iso,expo,seq.aperture,"1","9",seq.shutter!="-1"?seq.shutter:"bulb","0","4");//parametre par defaut a changé
 
-                        auto v=apn.get_parameter(RC_Apn::Parameter::FILE);
+                       /* auto v=apn.get_parameter(RC_Apn::Conf_param::FILE);
                         apn.init_parameter();
-                        auto temp=apn.get_parameter(RC_Apn::Parameter::FILE);
+                        auto temp=apn.get_parameter(RC_Apn::Conf_param::FILE);
 
                         std::string new_capt("");
                         for(auto i : temp)
@@ -211,7 +203,7 @@ public:
                         }
 
                         apn.download(new_capt,rep_directory+"/"+(seq.type_raw!="-1"?seq.type_raw:""));
-                        last_capt=(rep_directory+"/"+(seq.type_raw!="-1"?(seq.type_raw+"/"):""))+new_capt;
+                        last_capt=(rep_directory+"/"+(seq.type_raw!="-1"?(seq.type_raw+"/"):""))+new_capt;*/
                     }
                     else
                     {
@@ -251,9 +243,9 @@ public:
                 ss_buff <<i.aperture;
                 ss_buff >>val;
                 if(check)
-                    check=this->check_cmd(apn,RC_Apn::Parameter::APERTURE,line,val);
+                    check=this->check_cmd(apn,gp2::Conf_param::APERTURE,line,val);
                 else
-                    this->check_cmd(apn,RC_Apn::Parameter::APERTURE,line,val);
+                    this->check_cmd(apn,gp2::Conf_param::APERTURE,line,val);
             }
 
             //on verifie les parametre du shutterspeed
@@ -263,9 +255,9 @@ public:
                 ss_buff <<i.shutter;
                 ss_buff >>val;
                 if(check)
-                    check=this->check_cmd(apn,RC_Apn::Parameter::SHUTTERSPEED,line,val);
+                    check=this->check_cmd(apn,gp2::Conf_param::SHUTTERSPEED,line,val);
                 else
-                    this->check_cmd(apn,RC_Apn::Parameter::SHUTTERSPEED,line,val);
+                    this->check_cmd(apn,gp2::Conf_param::SHUTTERSPEED,line,val);
             }
             //on verifie les balance de blanc
             if(i.wb!="-1")
@@ -274,9 +266,9 @@ public:
                 ss_buff <<i.wb;
                 ss_buff >>val;
                 if(check)
-                    check=this->check_cmd(apn,RC_Apn::Parameter::WHITE_BALANCE,line,val);
+                    check=this->check_cmd(apn,gp2::Conf_param::WHITE_BALANCE,line,val);
                 else
-                    this->check_cmd(apn,RC_Apn::Parameter::WHITE_BALANCE,line,val);
+                    this->check_cmd(apn,gp2::Conf_param::WHITE_BALANCE,line,val);
             }
             //on verifie les effect appliquer
             if(i.effect!="-1")
@@ -285,9 +277,9 @@ public:
                 ss_buff <<i.effect;
                 ss_buff >>val;
                 if(check)
-                    check=this->check_cmd(apn,RC_Apn::Parameter::PICTURE_STYLE,line,val);
+                    check=this->check_cmd(apn,gp2::Conf_param::PICTURE_STYLE,line,val);
                 else
-                    this->check_cmd(apn,RC_Apn::Parameter::PICTURE_STYLE,line,val);
+                    this->check_cmd(apn,gp2::Conf_param::PICTURE_STYLE,line,val);
             }
             //on verifie les iso
             if(i.iso!="-1")
@@ -296,9 +288,9 @@ public:
                 ss_buff <<i.iso;
                 ss_buff >>val;
                 if(check)
-                    check=this->check_cmd(apn,RC_Apn::Parameter::ISO,line,val);
+                    check=this->check_cmd(apn,gp2::Conf_param::ISO,line,val);
                 else
-                    this->check_cmd(apn,RC_Apn::Parameter::ISO,line,val);
+                    this->check_cmd(apn,gp2::Conf_param::ISO,line,val);
             }
 
             //on verifie le delay, frame et intervalle
@@ -332,7 +324,7 @@ public:
 
             if(i.work_dir != "-1")
             {
-                std::fstream Of(i.work_dir+"test_dir",std::ios::out);
+                std::fstream Of(i.work_dir+"/test_dir",std::ios::out);
                 if(!Of || Of.fail() || Of.bad())
                 {
                     std::cerr << "ligne " << line << " erreur pour REP_DIRECTORY "<<i.work_dir<<" introuvable"<<std::endl;
@@ -340,8 +332,8 @@ public:
 
                     i.work_dir= "-1";
                 }
-                else
-                    std::remove(std::string(i.work_dir+"test_dir").c_str());
+
+                std::remove(std::string(i.work_dir+"/test_dir").c_str());
             }
 
         }
@@ -406,7 +398,7 @@ private:
 ///-------------------------------------------------------------
 ///verifie si les instruction sont erroné
 ///-------------------------------------------------------------
-    bool check_cmd(RC_Apn & apn,RC_Apn::Parameter const & param,int line,std::string value)
+    bool check_cmd(RC_Apn & apn,gp2::Conf_param const & param,int line,std::string value)
     {
         auto v= apn.get_parameter(param);
 
@@ -415,7 +407,7 @@ private:
         if(res == v.end())
         {
             //informe sur l'erreur
-            std::cerr << "ligne " << line << " erreur pour " << RC_Apn::parameter_to_string(param) <<" "<<value<<" non pris en charge"<<std::endl;
+            std::cerr << "ligne " << line << " erreur pour " << gp2::Conf_param_to_str(param) <<" "<<value<<" non pris en charge"<<std::endl;
 
             return false;
         }

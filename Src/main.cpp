@@ -5,19 +5,22 @@ int main(int argc,char ** argv)
 {
     std::vector<std::string> Parametre=parser::parser(argc,argv);
 
+    struct gp2::mnt _mount;
+    _mount.path="/run/user/1000/gvfs";
+    _mount.cmd="gio mount";
+
     GUI Api;
     Intervallometre inter;
     RC_Apn apn;
 
     inter.debug_mode= parser::find("--debug-mode",Parametre) || parser::find("-d",Parametre);
-
+    inter.debug_mode=true;
     apn.debug_mode= inter.debug_mode;
     apn.download_and_remove= parser::find("--download-and-remove",Parametre) || parser::find("-f",Parametre);
     apn.tcp_client= parser::find("--tcp-client",Parametre) || parser::find("-t",Parametre);
     apn.older=parser::find("--old-apn",Parametre) || parser::find("-o",Parametre);
 
     //apn.tcp_client=true;
-    //apn.debug_mode=true;
 
     if(apn.tcp_client)
     {
@@ -48,25 +51,25 @@ int main(int argc,char ** argv)
             If >> port;
         else
         {
-            std::cerr << "fichier de config client corrompue" << std::endl;
+            std::cerr << _print<unix_color::RED>("fichier de config client corrompue") << std::endl;
             notify_send("fichier de config client corrompue");
             return -1;
         }
 
         if(!apn.connect(addr,port))
         {
-            std::cerr << "connection impossible: " << addr <<":"<< port << " -> verifié les parametres du ficher de config client si connection NOK debug mode pour plus d'info"<<std::endl;
+            std::cerr << _print<unix_color::RED>("connection impossible: ") << addr <<":"<< port << " -> verifié les parametres du ficher de config client si connection NOK debug mode pour plus d'info"<<std::endl;
             notify_send("connection impossible");
             return -1;
         }
-
-
     }
 
     if(parser::find("--version",Parametre) || parser::find("-v",Parametre))
     {
-        std::cout <<"Intervallometre version = 0.0.0"<<std::endl;
+        std::cout <<"Intervallometre version = 0.1.0"<<std::endl;
+        std::cout <<"Libraw version: "<<LibRaw::version()<<std::endl;
         system("gphoto2 -v");
+        system("gphotofs -v");
 
         std::cout <<"Opencv version = "<< CV_MAJOR_VERSION<<"."<< CV_MINOR_VERSION <<std::endl;
 
@@ -89,7 +92,7 @@ int main(int argc,char ** argv)
 
         if(!If)
         {
-            std::cerr << "aide introuvable" <<std::endl;
+            std::cerr << _print<unix_color::BLUE>("aide introuvable") <<std::endl;
             notify_send("aide introuvable");
         }
 
@@ -105,22 +108,39 @@ int main(int argc,char ** argv)
 
     if(!apn.check_apn())
     {
-        std::cerr << "aucun apn detecté" << std::endl;
+        std::cerr <<  _print<unix_color::RED>("aucun apn detecté") << std::endl;
+
         notify_send("aucun apn detecté");
 
         return -1;
     }
-    apn.init_parameter();
+    gp2::Unmount(_mount);
+
+    std::this_thread::sleep_for(std::chrono::duration<int,std::milli>(3000));
+
+    try
+    {
+       apn.init_conf_param();
+    }
+    catch(std::string const & e)
+    {
+        std::cerr << _print<unix_color::RED>(e) << std::endl;
+    }
+    catch(std::exception const & e)
+    {
+        std::cerr << _print<unix_color::RED>(e.what()) << std::endl;
+    }
+
     if(!inter.load("debug_seq"))
     {
-        std::cerr << "aucune sequance détectée" << std::endl;
+        std::cerr << _print<unix_color::RED>("aucune sequance détectée") << std::endl;
         notify_send("aucune sequance détectée");
 
         return -1;
     }
     else if(!inter.check_sequance(apn))
     {
-        std::cerr << "des erreurs ont été trouvées dans la séquance --debug-mode pour détails" << std::endl;
+        std::cerr << _print<unix_color::RED>("des erreurs ont été trouvées dans la séquance --debug-mode pour détails") << std::endl;
         notify_send("des erreurs ont été trouvées dans la séquance");
         return -1;
     }
@@ -140,6 +160,7 @@ int main(int argc,char ** argv)
 
     th.join();
 
+    gp2::Mount(_mount);
 
     return 0;
 }
