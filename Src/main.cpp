@@ -1,31 +1,84 @@
+#define __DEBUG_MODE
+//#define __TCP_MODE
+
+#define CONFIGURE_PATH ".configure"
+
 #include "Intervallometre.hpp"
 #include "parser.hpp"
+
+void init_configure(struct gp2::mnt & _mount)
+{
+    std::fstream If(CONFIGURE_PATH,std::ios::in);
+
+    if(!If || If.bad() || If.fail())
+        throw std::string("erreur a la lecture de .config");
+
+    std::getline(If,_mount.cmd);
+    std::getline(If,_mount.path);
+}
 
 int main(int argc,char ** argv)
 {
     std::vector<std::string> Parametre=parser::parser(argc,argv);
 
     struct gp2::mnt _mount;
-    _mount.path="/run/user/1000/gvfs";
-    _mount.cmd="gio mount";
+    struct t_connect tc;
 
     GUI Api;
     Intervallometre inter;
     RC_Apn apn;
 
-    inter.debug_mode= parser::find("--debug-mode",Parametre) || parser::find("-d",Parametre);
-    inter.debug_mode=true;
-    apn.debug_mode= inter.debug_mode;
-    apn.download_and_remove= parser::find("--download-and-remove",Parametre) || parser::find("-f",Parametre);
+    bool debug_mode=parser::find("--debug-mode",Parametre) || parser::find("-d",Parametre);
+
+    #ifdef __DEBUG_MODE
+        debug_mode=true;
+    #endif // __DEBUG_MODE
+
+    inter.debug_mode= debug_mode;
+    apn.debug_mode= debug_mode;
+
     apn.tcp_client= parser::find("--tcp-client",Parametre) || parser::find("-t",Parametre);
+
+    #ifdef __TCP_MODE
+        apn.tcp_client=true;
+    #endif // __DEBUG_MODE_TCP
+
+    apn.download_and_remove= parser::find("--download-and-remove",Parametre) || parser::find("-f",Parametre);
     apn.older=parser::find("--old-apn",Parametre) || parser::find("-o",Parametre);
 
-    //apn.tcp_client=true;
+    if(system(nullptr));
+    else
+    {
+        std::cerr << _print<unix_color::RED>("les commandse system ne peuve etre utilise") << std::endl;
+        return -1;
+    }
+
+    try
+    {
+        init_configure(_mount);
+    }
+    catch(std::string const & e)
+    {
+        if(debug_mode)
+            std::cerr << _print<unix_color::BLUE>(e) << std::endl;
+
+        #ifndef WIN32
+        _mount.cmd="gio mount";
+        _mount.path="/run/user/1000/gvfs";
+        #elif
+        return -1;
+        #endif // WIN32
+    }
+    catch(std::exception const & e)
+    {
+        std::cerr << _print<unix_color::BLUE>(e.what()) << std::endl;
+
+        return -1;
+    }
 
     if(apn.tcp_client)
     {
-        std::string addr(""),mt("");
-        uint32_t port(0);
+        std::string mt("");
 
         std::fstream If("client.conf",std::ios::in);
 
@@ -38,7 +91,7 @@ int main(int argc,char ** argv)
 
         If >> mt;
         if(mt=="IP")
-            If >> addr;
+            If >> tc.addr;
         else
         {
             std::cerr << "fichier de config client corrompue" << std::endl;
@@ -48,7 +101,7 @@ int main(int argc,char ** argv)
 
         If >> mt;
         if(mt=="PORT")
-            If >> port;
+            If >> tc.port;
         else
         {
             std::cerr << _print<unix_color::RED>("fichier de config client corrompue") << std::endl;
@@ -56,9 +109,9 @@ int main(int argc,char ** argv)
             return -1;
         }
 
-        if(!apn.connect(addr,port))
+        if(!apn.connect(tc))
         {
-            std::cerr << _print<unix_color::RED>("connection impossible: ") << addr <<":"<< port << " -> verifié les parametres du ficher de config client si connection NOK debug mode pour plus d'info"<<std::endl;
+            std::cerr << _print<unix_color::RED>("connection impossible: ") << tc.addr <<":"<< tc.port << " -> verifié les parametres du ficher de config client si connection NOK debug mode pour plus d'info"<<std::endl;
             notify_send("connection impossible");
             return -1;
         }
@@ -106,29 +159,26 @@ int main(int argc,char ** argv)
         return 0;
     }
 
-    if(!apn.check_apn())
-    {
-        std::cerr <<  _print<unix_color::RED>("aucun apn detecté") << std::endl;
-
-        notify_send("aucun apn detecté");
-
-        return -1;
-    }
-    gp2::Unmount(_mount);
-
-    std::this_thread::sleep_for(std::chrono::duration<int,std::milli>(3000));
-
     try
     {
-       apn.init_conf_param();
+        apn.check_apn();
+
+        gp2::Unmount(_mount);
+
+        std::this_thread::sleep_for(std::chrono::duration<int,std::milli>(3000));
+
+        apn.init_conf_param();
     }
-    catch(std::string const & e)
+    catch(Error  & e)
     {
-        std::cerr << _print<unix_color::RED>(e) << std::endl;
+        std::cerr << e.what() << std::endl;
+
+        if(e.get_niveau()!=Error::niveau::WARNING)
+            return -1;
     }
     catch(std::exception const & e)
     {
-        std::cerr << _print<unix_color::RED>(e.what()) << std::endl;
+        std::cerr << e.what() << std::endl;
     }
 
     if(!inter.load("debug_seq"))
@@ -142,6 +192,7 @@ int main(int argc,char ** argv)
     {
         std::cerr << _print<unix_color::RED>("des erreurs ont été trouvées dans la séquance --debug-mode pour détails") << std::endl;
         notify_send("des erreurs ont été trouvées dans la séquance");
+
         return -1;
     }
 

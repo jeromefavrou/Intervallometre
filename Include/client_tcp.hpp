@@ -32,6 +32,12 @@ typedef struct sockaddr_in SOCKADDR_IN;
 typedef struct sockaddr SOCKADDR;
 typedef struct in_addr IN_ADDR;
 
+struct t_connect
+{
+    std::string addr;
+    uint32_t port;
+};
+
 class CSocketTCPClient
 {
     public:
@@ -46,7 +52,7 @@ class CSocketTCPClient
 
     void CloseSocket(unsigned int const & idx);
 
-    void Connect(unsigned int const & idx,std::string const &addr,uint32_t const &port,typeip const & tip);
+    void Connect(unsigned int const & idx,struct t_connect const & tc,typeip const & tip);
 
     void Write(unsigned int const &idx,VCHAR const & buffer);
 

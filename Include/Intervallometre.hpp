@@ -176,8 +176,10 @@ public:
                 {
                     std::cout <<std::endl<< "frame "<<i+1<<"/"<<seq.frame<<std::endl;
 
-                    if(apn.check_apn())//on verifie la presance apn a chaque capture
+                    try
                     {
+                        apn.check_apn();//on verifie la presance apn a chaque capture
+
                         std::cout <<"ne pas débrancher apn capture en cour iso: " << seq.iso << " exposition: "<<seq.exposure<<" ouverture: " <<seq.aperture <<std::endl;
 
                         std::string expo=ss_cast<int,std::string>(seq.exposure-1);
@@ -185,29 +187,15 @@ public:
 
                         //capture
                         apn.capture_EOS_DSLR(inter,seq.iso,expo,seq.aperture,"1","9",seq.shutter!="-1"?seq.shutter:"bulb","0","4");//parametre par defaut a changé
-
-                       /* auto v=apn.get_parameter(RC_Apn::Conf_param::FILE);
-                        apn.init_parameter();
-                        auto temp=apn.get_parameter(RC_Apn::Conf_param::FILE);
-
-                        std::string new_capt("");
-                        for(auto i : temp)
-                        {
-                             auto res= std::find(v.begin(),v.end(),i);
-
-                             if(res == v.end())
-                             {
-                                 new_capt=i;
-                                 break;
-                             }
-                        }
-
-                        apn.download(new_capt,rep_directory+"/"+(seq.type_raw!="-1"?seq.type_raw:""));
-                        last_capt=(rep_directory+"/"+(seq.type_raw!="-1"?(seq.type_raw+"/"):""))+new_capt;*/
                     }
-                    else
+                    catch(RC_Apn::Erreur & e)
                     {
-                        std::cout << "capture annulée aucun apn detecté" << std::endl;
+                        std::cerr << e.what() << std::endl;
+
+                        if(e.get_niveau()==Error::niveau::FATAL_ERROR)
+                            return ;
+
+                        i-=1;
                     }
                 }
             }

@@ -46,7 +46,13 @@ void gp2::Get_config(gp2::Conf_param const & param,gp2::Data & gc)
     std::fstream If("buff",std::ios::in);
 
     if(!If || If.bad() || If.fail())
-        throw std::string("probleme de lecture de la config gp2: "+gp2::Conf_param_to_str(param));
+        throw gp2::Erreur(1,"probleme de lecture de la config gp2: "+gp2::Conf_param_to_str(param),gp2::Erreur::ERROR);
+
+    gp2::Data dvc;
+    gp2::Auto_detect(dvc);
+
+    if(dvc.size()==0)
+        throw gp2::Erreur(1,"lecture config impossible aucun materiel detecté",gp2::Erreur::ERROR);
 
     gc.clear();
 
@@ -76,7 +82,7 @@ void gp2::Auto_detect(gp2::Data & device)
     std::fstream If("ck_apn",std::ios::in);
 
     if(!If || If.bad() || If.fail())
-        throw std::string("probleme de lecture des apareils connecte");
+        throw gp2::Erreur(3,"probleme de lecture des apareils connecte",gp2::Erreur::ERROR);
 
     device.clear();
     std::string buff;

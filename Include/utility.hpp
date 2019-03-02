@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
-enum unix_color{BLACK=40,RED,GREEN,BLUE,PINK,CYAN,GREY};
+enum unix_color{BLACK=40,RED=41,GREEN=42,BLUE=43,PINK=44,CYAN=45,GREY=46};
 
 template<class T1,class T2> T2 ss_cast(T1 const & d)
 {

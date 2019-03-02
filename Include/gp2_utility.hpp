@@ -3,10 +3,18 @@
 
 #include "utility.hpp"
 #include <fstream>
+#include "Error.hpp"
 
 namespace gp2
 {
     typedef std::vector<std::string> Data;
+
+    class Erreur : public Error
+    {
+    public:
+        Erreur(int numero, std::string const& phrase,niveau _niveau)throw():Error(numero,phrase,_niveau){this->m_class="gp2::Erreur";};
+        virtual ~Erreur(){};
+    };
 
     enum Conf_param{ APERTURE=1, ISO , SHUTTERSPEED , FORMAT , TARGET , WHITE_BALANCE , PICTURE_STYLE};
     enum Gest_file_param{LS_FILES=8,LS_FOLDER,RMDIR,MKDIR,GET_FILE,DELETE_FILE};

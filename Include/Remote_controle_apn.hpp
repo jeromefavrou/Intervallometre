@@ -24,6 +24,13 @@ public:
     ///definit si mode de compatibilité avec ancien apn activé
     bool older;
 
+    ///heritage de la class d'erreur
+    class Erreur : public Error
+    {
+    public:
+         Erreur(int numero, std::string const& phrase,niveau _niveau)throw():Error(numero,phrase,_niveau){this->m_class="RC_Apn::Erreur";};
+        virtual ~Erreur(){};
+    };
     ///byts de communication
     class Com_bytes
     {
@@ -54,9 +61,9 @@ public:
 
     RC_Apn(void);
     ~RC_Apn(void);
-    bool connect(std::string const & ip,uint32_t const & port);
+    bool connect(struct t_connect const & tc);
     void init_conf_param(void);
-    bool check_apn(void);
+    void check_apn(void);
     void capture_EOS_DSLR(std::string inter,std::string iso,std::string exposure,std::string aperture,std::string target,std::string format, std::string shutter,std::string wb,std::string effect);
     void set_config(gp2::Conf_param const & param,std::string value);
     _Data & get_parameter(gp2::Conf_param const & param);

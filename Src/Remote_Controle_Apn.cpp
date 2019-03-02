@@ -27,7 +27,7 @@ RC_Apn::~RC_Apn(void)
 ///-------------------------------------------------------------
 ///cree un client et se connecte au serveur et envoie les info de bases
 ///-------------------------------------------------------------
-bool RC_Apn::connect(std::string const & ip,uint32_t const & port)
+bool RC_Apn::connect(struct t_connect const & tc)
 {
     if(this->tcp_client)
     {
@@ -37,7 +37,7 @@ bool RC_Apn::connect(std::string const & ip,uint32_t const & port)
 
             this->m_client->NewSocket(this->m_id_client);
 
-            this->m_client->Connect(this->m_id_client,ip,port,CSocketTCPClient::IP);
+            this->m_client->Connect(this->m_id_client,tc,CSocketTCPClient::IP);
 
 
             VCHAR rep_tram;
@@ -93,7 +93,7 @@ void RC_Apn::init_conf_param(void)
 ///-------------------------------------------------------------
 ///verifie qu'un apn est bien accessible par gphoto2
 ///-------------------------------------------------------------
-bool RC_Apn::check_apn(void)
+void RC_Apn::check_apn(void)
 {
     //sauvegarde temporaire sur disque du resulatat
     if(!this->tcp_client)
@@ -108,20 +108,21 @@ bool RC_Apn::check_apn(void)
                 std::clog << "device: "<<i<<std::endl;
         }
 
-        return (device.size()>0?true:false);
+        if(device.size()<=0)
+            throw RC_Apn::Erreur(1,"Aucun APN détecté",RC_Apn::Erreur::niveau::ERROR);
     }
     else
     {
-        //envoie la demande de chack apn au serveur
+        //envoie la demande de check apn au serveur
         this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Check_Apn,Tram::Com_bytes::EOT}).get_c_data());
 
         //attend la réponse
         Tram rep_tram=Read_Tram(Tram::Com_bytes::EOT,*this->m_client,this->m_id_client,1);
 
-        return this->check_acknowledge(rep_tram.get_data());
+        if(!this->check_acknowledge(rep_tram.get_data()))
+            throw RC_Apn::Erreur(1,"Tram incorrecte",RC_Apn::Erreur::niveau::ERROR);
     }
-
-    return false;
+    throw RC_Apn::Erreur(1,"Le programme n'a pas reussi a check la présence d'APN",RC_Apn::Erreur::niveau::FATAL_ERROR);
 }
 
 ///-------------------------------------------------------------
