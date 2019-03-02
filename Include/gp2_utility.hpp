@@ -1,8 +1,8 @@
 #ifndef GP2_UTILITY_HPP_INCLUDED
 #define GP2_UTILITY_HPP_INCLUDED
 
-#include "utility.hpp"
 #include <fstream>
+#include "utility.hpp"
 #include "Error.hpp"
 
 namespace gp2

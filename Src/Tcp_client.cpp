@@ -13,7 +13,7 @@ void CSocketTCPClient::NewSocket(unsigned int const &idx)
     Sk_Channel[idx]=std::shared_ptr<SOCKET>(new SOCKET(socket(AF_INET,SOCK_STREAM,0)));
 
     if(*Sk_Channel[idx]==INVALID_SOCKET)
-        throw std::string("Socket Serveur["+_print<unix_color::RED>("NOK")+"]");
+        throw CSocketTCPClient::Erreur(1,"Le socket n'a pas pu etre ouvert",CSocketTCPClient::Erreur::WARNING);
 
     if(this->debug_mode)
         std::clog<<"Socket ["<<idx<<"]["+_print<unix_color::GREEN>("OK")+"]"<<std::endl;
@@ -37,7 +37,7 @@ void CSocketTCPClient::Connect(unsigned int const & idx,struct t_connect const &
     it=Sk_Channel.find(idx);
 
     if(it==Sk_Channel.end())
-        throw std::range_error("cannot use a Socket not open");
+        throw CSocketTCPClient::Erreur(1,"ce socket ne peut etre utilisé",CSocketTCPClient::Erreur::ERROR);
 
     if(tip==this->IP)
         this->ServerAdress.sin_addr.s_addr=inet_addr(tc.addr.c_str());
@@ -47,7 +47,7 @@ void CSocketTCPClient::Connect(unsigned int const & idx,struct t_connect const &
         hostinfo = gethostbyname((const char*)tc.addr.c_str());
 
         if (hostinfo == nullptr)
-            throw std::string("hostname dont find");
+            throw CSocketTCPClient::Erreur(1,"nom d'hote introuvable",CSocketTCPClient::Erreur::ERROR);
 
         this->ServerAdress.sin_addr=*(IN_ADDR *) hostinfo->h_addr;
     }
@@ -56,7 +56,7 @@ void CSocketTCPClient::Connect(unsigned int const & idx,struct t_connect const &
     this->ServerAdress.sin_port=htons(tc.port);
 
     if (connect(*Sk_Channel[idx] , (struct sockaddr *)&ServerAdress , sizeof(ServerAdress)) == SOCKET_ERROR)
-        throw std::string("Connection ["+_print<unix_color::RED>("NOK")+"]");
+        throw CSocketTCPClient::Erreur(2,"echec de connection au serveur",CSocketTCPClient::Erreur::ERROR);
     if(this->debug_mode)
         std::clog<<"Connection ["<<idx<<"]["+_print<unix_color::GREEN>("OK")+"] => connected with: "<<tc.addr<<":"<<tc.port<<std::endl;
 }
@@ -67,7 +67,7 @@ void CSocketTCPClient::Write(unsigned int const &idx,VCHAR const & buffer)
     it=Sk_Channel.find(idx);
 
     if(it==Sk_Channel.end())
-        throw std::range_error("cannot use a Socket not open");
+        throw CSocketTCPClient::Erreur(1,"ce socket ne peut etre utilisé",CSocketTCPClient::Erreur::ERROR);
 
     send(*Sk_Channel[idx],buffer.data(),buffer.size(),0);
 }

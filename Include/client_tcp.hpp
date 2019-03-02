@@ -24,6 +24,7 @@
 #include <string>
 #include <memory>
 #include <thread>
+#include "Error.hpp"
 #include "tram.hpp"
 #include "utility.hpp"
 
@@ -43,6 +44,14 @@ class CSocketTCPClient
     public:
     enum typeip{HOSTNAME,IP};
     bool debug_mode;
+
+    ///heritage de la class d'erreur
+    class Erreur : public Error
+    {
+    public:
+         Erreur(int numero, std::string const& phrase,niveau _niveau)throw():Error(numero,phrase,_niveau){this->m_class="CSocketTCPClient::Erreur";};
+        virtual ~Erreur(){};
+    };
 
     CSocketTCPClient(void);
 

@@ -61,7 +61,7 @@ public:
 
     RC_Apn(void);
     ~RC_Apn(void);
-    bool connect(struct t_connect const & tc);
+    void connect(struct t_connect const & tc);
     void init_conf_param(void);
     void check_apn(void);
     void capture_EOS_DSLR(std::string inter,std::string iso,std::string exposure,std::string aperture,std::string target,std::string format, std::string shutter,std::string wb,std::string effect);

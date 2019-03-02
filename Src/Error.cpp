@@ -11,14 +11,14 @@ std::string Error::what() throw()
 
     switch(this->m_niveau)
     {
-    case WARNING: str=_print<unix_color::BLUE>("WARNING"); break;
-    case ERROR: str=_print<unix_color::PINK>("ERROR"); break;
+    case WARNING: str=_print<unix_color::GREEN>("WARNING"); break;
+    case ERROR: str=_print<unix_color::BLUE>("ERROR"); break;
     case FATAL_ERROR: str=_print<unix_color::RED>("FATAL ERROR"); break;
     default : str="WARNING";
     }
 
-    str_erreur="("+this->m_class+")";
-    str_erreur+=str+"[";
+    str_erreur="("+this->m_class+") ";
+    str_erreur+=str+" [";
     str_erreur+=ss_cast<int,std::string>(this->m_numero)+"]: "+this->m_phrase;
 
     return str_erreur;

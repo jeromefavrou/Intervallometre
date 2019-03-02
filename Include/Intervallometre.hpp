@@ -19,12 +19,20 @@ public:
     ///defini si mode debug activé
     bool debug_mode;
 
+    ///heritage de la class d'erreur
+    class Erreur : public Error
+    {
+    public:
+         Erreur(int numero, std::string const& phrase,niveau _niveau)throw():Error(numero,phrase,_niveau){this->m_class="Intervallometre::Erreur";};
+        virtual ~Erreur(){};
+    };
+
     ///defini les parametre d'une sequance
     struct Sequance
     {
 
-        bool user_local:1; //si la commande vien du programe ou concerne gphoto2
-        bool wait:1;
+        bool user_local; //si la commande vien du programe ou concerne gphoto2
+        bool wait;
 
         int frame;
         int exposure;
@@ -54,60 +62,39 @@ public:
 ///-------------------------------------------------------------
 ///charge la sequance
 ///-------------------------------------------------------------
-    bool load(std::string const & file) noexcept
+    void load(std::string const & file)
     {
         std::fstream If;
-        try
+
+        If.open(file,std::ios::in);
+
+        if(!If || If.fail() || If.bad() || If.eof())
+            throw Intervallometre::Erreur(1,"sequance \""+file+"\" introuvable",Intervallometre::Erreur::ERROR);
+
+        this->m_seq.clear();
+
+        std::string instruction;
+
+        while(getline(If,instruction))
         {
-            If.open(file,std::ios::in);
-
-            if(!If || If.fail() || If.bad() || If.eof())
-                throw std::string("erreur a l'ouverture de "+file);
-
-            this->m_seq.clear();
-
-            std::string instruction;
-
-            while(getline(If,instruction))
+            if(instruction.size()>2)
             {
-                if(instruction.size()>2)
+                if(instruction[0]=='/'&&instruction[1]=='/')//ignore une ligne de sequance mais affiche au terminal celle ci
                 {
-                    if(instruction[0]=='/'&&instruction[1]=='/')//ignore une ligne de sequance mais affiche au terminal celle ci
-                    {
-                        std::cout << instruction <<std::endl;
-                        continue;
-                    }
-                    if(instruction[0]=='#')//ignore une ligne de sequance
-                        continue;
+                    std::cout << instruction <<std::endl;
+                    continue;
                 }
-
-                std::stringstream ss_buf;
-
-                ss_buf << instruction;
-
-                //on vien interpreter le reste de la sequance
-                this->m_seq.push_back(this->interpreter(ss_buf));
+                if(instruction[0]=='#')//ignore une ligne de sequance
+                    continue;
             }
 
-            return true;
-        }
-        //gestion des erreur
-        catch(std::string const & error)
-        {
-            if(this->debug_mode)
-                std::cerr << "0x01 " << error <<std::endl;
+            std::stringstream ss_buf;
 
-            return false;
-        }
-        catch(std::exception const & error)
-        {
-            if(this->debug_mode)
-                std::cerr << "0x02 " << error.what() <<std::endl;
+            ss_buf << instruction;
 
-            return false;
+            //on vien interpreter le reste de la sequance
+            this->m_seq.push_back(this->interpreter(ss_buf));
         }
-
-        return false;
     }
 
 ///-------------------------------------------------------------
@@ -213,7 +200,7 @@ public:
 ///-------------------------------------------------------------
 ///verifie si la sequance possede des erreur
 ///-------------------------------------------------------------
-    bool check_sequance(RC_Apn & apn)
+    void check_sequance(RC_Apn & apn)
     {
         bool check(true);
         int line(0);
@@ -284,28 +271,32 @@ public:
             //on verifie le delay, frame et intervalle
             if(i.delay<=0 && i.delay!=-1)
             {
-                std::cerr << "ligne " << line << " erreur pour wait "<<i.delay<<" non pris en charge (<=0)"<<std::endl;
+                if(this->debug_mode)
+                    std::cerr << "ligne " << line << " erreur pour wait "<<i.delay<<" non pris en charge (<=0)"<<std::endl;
                 check=false;
             }
 
 
             if(i.frame<=0 && i.frame!=-1)
             {
-                std::cerr << "ligne " << line << " erreur pour wait "<<i.delay<<" non pris en charge (<=0)"<<std::endl;
+                if(this->debug_mode)
+                    std::cerr << "ligne " << line << " erreur pour wait "<<i.delay<<" non pris en charge (<=0)"<<std::endl;
                 check=false;
             }
 
 
             if(i.intervalle<1 && i.intervalle!=-1)
             {
-                std::cerr << "ligne " << line << " erreur pour wait "<<i.delay<<" non pris en charge (< 1)"<<std::endl;
+                if(this->debug_mode)
+                    std::cerr << "ligne " << line << " erreur pour wait "<<i.delay<<" non pris en charge (< 1)"<<std::endl;
                 check=false;
             }
 
 
             if(i.type_raw != "dark" && i.type_raw != "flat" && i.type_raw != "offset" && i.type_raw != "light" && i.type_raw != "-1")
             {
-                std::cerr << "ligne " << line << " erreur pour TYPE_RAW "<<i.type_raw<<" non pris en charge (!= dark || offset || flat || light)"<<std::endl;
+                if(this->debug_mode)
+                    std::cerr << "ligne " << line << " erreur pour TYPE_RAW "<<i.type_raw<<" non pris en charge (!= dark || offset || flat || light)"<<std::endl;
                 check=false;
             }
 
@@ -315,7 +306,9 @@ public:
                 std::fstream Of(i.work_dir+"/test_dir",std::ios::out);
                 if(!Of || Of.fail() || Of.bad())
                 {
-                    std::cerr << "ligne " << line << " erreur pour REP_DIRECTORY "<<i.work_dir<<" introuvable"<<std::endl;
+                    if(this->debug_mode)
+                        std::cerr << "ligne " << line << " erreur pour REP_DIRECTORY "<<i.work_dir<<" introuvable"<<std::endl;
+
                     check=false;
 
                     i.work_dir= "-1";
@@ -325,8 +318,8 @@ public:
             }
 
         }
-        //true si pas d'erreur
-        return check;
+        if(!check)
+            throw Intervallometre::Erreur(2,"Une ou plusieur erreur on été trouvées dans la sequance \"--debug-mode\" pour plus d'info ",Intervallometre::Erreur::ERROR);
     }
 
 private:
@@ -395,7 +388,8 @@ private:
         if(res == v.end())
         {
             //informe sur l'erreur
-            std::cerr << "ligne " << line << " erreur pour " << gp2::Conf_param_to_str(param) <<" "<<value<<" non pris en charge"<<std::endl;
+            if(this->debug_mode)
+                std::cerr << "ligne " << line << " erreur pour " << gp2::Conf_param_to_str(param) <<" "<<value<<" non pris en charge"<<std::endl;
 
             return false;
         }

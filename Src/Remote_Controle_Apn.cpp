@@ -27,51 +27,30 @@ RC_Apn::~RC_Apn(void)
 ///-------------------------------------------------------------
 ///cree un client et se connecte au serveur et envoie les info de bases
 ///-------------------------------------------------------------
-bool RC_Apn::connect(struct t_connect const & tc)
+void RC_Apn::connect(struct t_connect const & tc)
 {
     if(this->tcp_client)
     {
-        try
-        {
-            this->m_client=std::make_unique<CSocketTCPClient>(CSocketTCPClient());
 
-            this->m_client->NewSocket(this->m_id_client);
+        this->m_client=std::make_unique<CSocketTCPClient>(CSocketTCPClient());
 
-            this->m_client->Connect(this->m_id_client,tc,CSocketTCPClient::IP);
+        this->m_client->NewSocket(this->m_id_client);
 
+        this->m_client->Connect(this->m_id_client,tc,CSocketTCPClient::IP);
 
-            VCHAR rep_tram;
-            this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Older,this->older?'1':'0',Tram::Com_bytes::EOT}).get_c_data());
-            this->m_client->Read<2048>(this->m_id_client,rep_tram);
-            if(!this->check_acknowledge(rep_tram))throw std::string("erreur de transmition");
+        VCHAR rep_tram;
+        this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Older,this->older?'1':'0',Tram::Com_bytes::EOT}).get_c_data());
+        this->m_client->Read<2048>(this->m_id_client,rep_tram);
+        if(!this->check_acknowledge(rep_tram))throw RC_Apn::Erreur(1,"erreur de transmition",RC_Apn::Erreur::WARNING);
 
-            this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Tcp_client,'0',Tram::Com_bytes::EOT}).get_c_data());
-            this->m_client->Read<2048>(this->m_id_client,rep_tram);
-            if(!this->check_acknowledge(rep_tram))throw std::string("erreur de transmition");
+        this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Tcp_client,'0',Tram::Com_bytes::EOT}).get_c_data());
+        this->m_client->Read<2048>(this->m_id_client,rep_tram);
+        if(!this->check_acknowledge(rep_tram))throw RC_Apn::Erreur(2,"erreur de transmition",RC_Apn::Erreur::WARNING);
 
-            this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Debug_mode,this->debug_mode?'1':'0',Tram::Com_bytes::EOT}).get_c_data());
-            this->m_client->Read<2048>(this->m_id_client,rep_tram);
-            if(!this->check_acknowledge(rep_tram))throw std::string("erreur de transmition");
-
-            return true;
-        }
-        catch(std::exception const & error)
-        {
-            if(this->debug_mode)
-                std::cerr << error.what() <<std::endl;
-
-            return false;
-        }
-        catch(std::string const & error)
-        {
-            if(this->debug_mode)
-                std::cerr << error <<std::endl;
-
-            return false;
-        }
+        this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Debug_mode,this->debug_mode?'1':'0',Tram::Com_bytes::EOT}).get_c_data());
+        this->m_client->Read<2048>(this->m_id_client,rep_tram);
+        if(!this->check_acknowledge(rep_tram))throw RC_Apn::Erreur(3,"erreur de transmition",RC_Apn::Erreur::WARNING);
     }
-
-    return false;
 }
 
 ///-------------------------------------------------------------
@@ -402,7 +381,6 @@ bool RC_Apn::check_acknowledge(VCHAR const & rep_tram)
         std::cout <<"erreur de connection avec le serveur" <<std::endl;
         return false;
     }
-
     return false;
 }
 
@@ -417,16 +395,9 @@ Tram RC_Apn::Recv(int time_out)
         rep_tram=Read_Tram(Tram::Com_bytes::EOT,*this->m_client,this->m_id_client,time_out);
 
         if(!this->check_acknowledge(rep_tram.get_data()))
-        {
-            if(this->debug_mode)
-                std::cerr << "erreur de transmition"<<std::endl;
-        }
+                throw RC_Apn::Erreur(1,"erreur de transmition",RC_Apn::Erreur::WARNING);
     }
-    catch(std::string const & e)
-    {
-        std::cerr << e <<std::endl;
-    }
-    catch(std::exception const & e)
+    catch(Error & e)
     {
         std::cerr << e.what() <<std::endl;
     }
