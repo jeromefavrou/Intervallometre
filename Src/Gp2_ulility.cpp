@@ -76,10 +76,10 @@ void gp2::Get_config(gp2::Conf_param const & param,gp2::Data & gc)
 
 void gp2::Auto_detect(gp2::Data & device)
 {
-    system("gphoto2 --auto-detect > ck_apn");
+    system("gphoto2 --auto-detect > .ck_apn");
 
     //lecture du resultat
-    std::fstream If("ck_apn",std::ios::in);
+    std::fstream If(".ck_apn",std::ios::in);
 
     if(!If || If.bad() || If.fail())
         throw gp2::Erreur(3,"probleme de lecture des apareils connecte",gp2::Erreur::ERROR);
@@ -93,5 +93,5 @@ void gp2::Auto_detect(gp2::Data & device)
     device.erase(device.begin(),device.begin()+2);
 
     //efface sauvegarde temporaire du disque
-    std::remove("ck_apn");
+    std::remove(".ck_apn");
 }

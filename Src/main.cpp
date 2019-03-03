@@ -51,7 +51,7 @@ int main(int argc,char ** argv)
     {
         if(system(nullptr));
         else
-            throw Error(1,"les commandes system ne peuvent etre utilise",Error::niveau::FATAL_ERROR)
+            throw Error(1,"les commandes system ne peuvent etre utilise",Error::niveau::FATAL_ERROR);
 
         init_configure(_mount);
     }

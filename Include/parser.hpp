@@ -28,7 +28,7 @@ namespace parser
     {
          return std::find(parser.begin(), parser.end(), p)!=parser.end()?true:false;
     }
-};
+}
 
 
 #endif // PARSER_HPP_INCLUDED

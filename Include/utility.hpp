@@ -22,7 +22,7 @@ template<class T1,class T2> T2 ss_cast(T1 const & d)
     _ss_cast >> tps;
 
     return tps;
-};
+}
 
 template<unix_color uc> std::string _print(std::string const & msg)
 {

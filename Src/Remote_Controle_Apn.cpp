@@ -4,19 +4,14 @@
 ///-------------------------------------------------------------
 ///initialisation aux valeurs par defaut
 ///-------------------------------------------------------------
-RC_Apn::RC_Apn(void):m_client(nullptr),m_id_client(0)
-{
-    this->debug_mode=false;
-    this->tcp_client=false;
-    this->download_and_remove=false;
-    this->older=false;
-    this->m_void=_Data(0);
-}
+RC_Apn::RC_Apn(void):m_client(nullptr),m_id_client(0),m_void(_Data(0)),m_aperture(_Data(0)),m_shutterspeed(_Data(0)),m_iso(_Data(0)),
+m_format(_Data(0)),m_target(_Data(0)),m_effect(_Data(0)),m_file(_Data(0)),m_wb(_Data(0)),debug_mode(false),tcp_client(false),
+download_and_remove(false),older(false){}
 
 ///-------------------------------------------------------------
 ///initialisation aux valeurs par defaut
 ///-------------------------------------------------------------
-RC_Apn::~RC_Apn(void)
+RC_Apn::~RC_Apn()
 {
     if(this->m_client!=nullptr)
     {

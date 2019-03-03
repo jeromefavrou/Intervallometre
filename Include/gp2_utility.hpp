@@ -35,7 +35,7 @@ namespace gp2
     void Auto_detect(gp2::Data & device);
 
     //void ls_file(std::string & name);
-};
+}
 
 
 #endif // GP2_UTILITY_HPP_INCLUDED
