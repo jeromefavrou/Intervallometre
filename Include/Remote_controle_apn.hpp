@@ -92,6 +92,10 @@ public:
     //pour connection a serveur distant
     std::unique_ptr<CSocketTCPClient> m_client;
     int const m_id_client;
+
+    //fichier pris par le programme
+    gp2::Folder_data ref_file_capture;
+    gp2::Folder_data file_capture;
 };
 
 #endif // REMOTE_CONTROLE_APN_HPP_INCLUDED

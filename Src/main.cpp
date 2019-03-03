@@ -160,7 +160,16 @@ int main(int argc,char ** argv)
 
         apn.init_conf_param();
 
-        inter.load("debug_seq");
+        std::string file_seq("");
+
+        #ifndef __DEBUG_MODE
+            std::cout << "chemin de la sequance: ";
+            getline(std::cin,file_seq);
+        #else
+            file_seq="debug_seq";
+        #endif // __DEBUG_MODE
+
+        inter.load(file_seq);
 
         inter.check_sequance(apn);
 

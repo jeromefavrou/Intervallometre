@@ -74,6 +74,17 @@ void gp2::Get_config(gp2::Conf_param const & param,gp2::Data & gc)
     }
 }
 
+void gp2::Set_config(gp2::Conf_param const & param,std::string value,bool debug_mode=false)
+{
+    gp2::Data dvc;
+    gp2::Auto_detect(dvc);
+
+    if(dvc.size()==0)
+        throw gp2::Erreur(1,"config impossible aucun materiel detecté",gp2::Erreur::ERROR);
+
+    free_cmd("gphoto2 --set-config "+gp2::Conf_param_to_str(param)+"="+value,debug_mode);
+}
+
 void gp2::Auto_detect(gp2::Data & device)
 {
     system("gphoto2 --auto-detect > .ck_apn");
@@ -94,4 +105,69 @@ void gp2::Auto_detect(gp2::Data & device)
 
     //efface sauvegarde temporaire du disque
     std::remove(".ck_apn");
+}
+
+void gp2::Delete_file(std::string const & file,bool debug_mode=false)
+{
+    gp2::Data dvc;
+    gp2::Auto_detect(dvc);
+
+    if(dvc.size()==0)
+        throw gp2::Erreur(1,"config impossible aucun materiel detecté",gp2::Erreur::ERROR);
+
+    free_cmd("gphoto2 -d "+file,debug_mode);
+}
+
+void gp2::List_files(gp2::Folder_data & F_data,bool debug_mode=false)
+{
+    gp2::Data dvc;
+    gp2::Auto_detect(dvc);
+
+    if(dvc.size()==0)
+        throw gp2::Erreur(1,"config impossible aucun materiel detecté",gp2::Erreur::ERROR);
+
+    free_cmd("gphoto2 --list-files > .ls_files_buffer",debug_mode);
+
+    //lecture du resultat
+    std::fstream If(".ls_files_buffer",std::ios::in);
+
+    if(!If || If.bad() || If.fail())
+        throw gp2::Erreur(4,"probleme de lecture fichier du materiel",gp2::Erreur::ERROR);
+
+    std::string line("");
+    std::string last_path("");
+
+    while(std::getline(If,line))
+    {
+        std::stringstream ss_buf;
+
+        ss_buf << line;
+
+        if(line[0]=='#')
+        {
+            ss_buf << line;
+
+            ss_buf >>line >> line;
+
+            F_data[last_path].push_back(line);
+        }
+        else
+        {
+            char c;
+            while(ss_buf)
+            {
+                ss_buf >> c;
+                if(c=='/')
+                {
+                    ss_buf >>line;
+                    line.erase(line.end()-4,line.end());
+                    last_path="/"+line;
+                    F_data[last_path]=gp2::Data(0);
+                    break;
+                }
+            }
+        }
+    }
+
+    std::remove(".ls_files_buffer");
 }

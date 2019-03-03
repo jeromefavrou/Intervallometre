@@ -2,12 +2,15 @@
 #define GP2_UTILITY_HPP_INCLUDED
 
 #include <fstream>
+#include <memory>
+#include <map>
 #include "utility.hpp"
 #include "Error.hpp"
 
 namespace gp2
 {
     typedef std::vector<std::string> Data;
+    typedef std::map<std::string,Data> Folder_data;
 
     class Erreur : public Error
     {
@@ -28,13 +31,12 @@ namespace gp2
     void Mount(struct mnt const & ifm);
     void Unmount(struct mnt const & ifm);
 
-    //Data ls_folder(std::string const & name,bool debug_mode=false);
-
     std::string Conf_param_to_str(Conf_param const & param);
-    void Get_config(gp2::Conf_param const & param,gp2::Data & gc);
-    void Auto_detect(gp2::Data & device);
-
-    //void ls_file(std::string & name);
+    void Get_config(Conf_param const & param,Data & gc);
+    void Set_config(Conf_param const & param,std::string value,bool debug_mode);
+    void List_files(Folder_data & F_data,bool debug_mode);
+    void Auto_detect(Data & device);
+    void Delete_file(std::string const & file,bool debug_mode);
 }
 
 

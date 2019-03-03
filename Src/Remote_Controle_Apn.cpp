@@ -96,7 +96,6 @@ void RC_Apn::check_apn(void)
         if(!this->check_acknowledge(rep_tram.get_data()))
             throw RC_Apn::Erreur(1,"Tram incorrecte",RC_Apn::Erreur::niveau::ERROR);
     }
-    throw RC_Apn::Erreur(1,"Le programme n'a pas reussi a check la présence d'APN",RC_Apn::Erreur::niveau::FATAL_ERROR);
 }
 
 ///-------------------------------------------------------------
@@ -109,7 +108,7 @@ void RC_Apn::capture_EOS_DSLR(std::string inter,std::string iso,std::string expo
     //on prepare la capture
     system("gphoto2 --set-config capture=on");
 
-    //on parametre l'apn
+    //on parametre l'apn  a voir pour ne set que les configs qui change
     this->set_config(gp2::Conf_param::TARGET,target);
     this->set_config(gp2::Conf_param::FORMAT,format);
     this->set_config(gp2::Conf_param::APERTURE,aperture);
@@ -120,15 +119,15 @@ void RC_Apn::capture_EOS_DSLR(std::string inter,std::string iso,std::string expo
     this->set_config(gp2::Conf_param::PICTURE_STYLE,effect);
 
     //attente de 0.1 s pour evité busy sur apn
-    std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(100));
+    std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(20));
 
     //commande gphoto de capture pour new et old
     if(!this->tcp_client)
     {
         if(!this->older)
-            free_cmd("gphoto2 --set-config eosremoterelease=5 --wait-event=2s --set-config eosremoterelease=0 --wait-event="+exposure+"s",this->debug_mode);
+            free_cmd("gphoto2 --set-config eosremoterelease=5 --wait-event=1s --set-config eosremoterelease=0 --wait-event="+exposure+"s",this->debug_mode);
         else
-            free_cmd("gphoto2 --set-config bulb=1 --wait-event=2s --set-config bulb=0 --wait-event="+exposure+"s",this->debug_mode);
+            free_cmd("gphoto2 --set-config bulb=1 --wait-event=1s --set-config bulb=0 --wait-event="+exposure+"s",this->debug_mode);
     }
     else
     {
@@ -157,14 +156,12 @@ void RC_Apn::capture_EOS_DSLR(std::string inter,std::string iso,std::string expo
 ///-------------------------------------------------------------
 void RC_Apn::set_config(gp2::Conf_param const & param,std::string value)
 {
-   /* if(param==RC_Apn::Conf_param::FILE)
-        return;*/
     if(this->debug_mode)
-        std::clog << "set_config debute" <<std::endl;
+        std::clog << "set_config en cours ("+gp2::Conf_param_to_str(param)+")" <<std::endl;
 
     if(!this->tcp_client)
     {
-        free_cmd("gphoto2 --set-config "+gp2::Conf_param_to_str(param)+"="+value,this->debug_mode);
+        gp2::Set_config(param,value,this->debug_mode);
     }
     else
     {
@@ -179,10 +176,7 @@ void RC_Apn::set_config(gp2::Conf_param const & param,std::string value)
         this->m_client->Write(this->m_id_client,tram.get_data());
 
         rep_tram=this->Recv(1);
-
     }
-    if(this->debug_mode)
-        std::clog << "set_config termine" <<std::endl;
 }
 
 ///-------------------------------------------------------------
@@ -199,7 +193,6 @@ RC_Apn::_Data & RC_Apn::get_parameter(gp2::Conf_param const & param)
         case gp2::Conf_param::TARGET: return this->m_target; break;
         case gp2::Conf_param::WHITE_BALANCE: return this->m_wb; break;
         case gp2::Conf_param::PICTURE_STYLE: return this->m_effect; break;
-       // case gp2::Conf_param::FILE: return this->m_file; break;
 
         default : return this->m_void;
     }
@@ -301,14 +294,14 @@ void RC_Apn::get_config(gp2::Conf_param const & param, _Data & gc)
     if(!this->tcp_client)
     {
         if(this->debug_mode)
-            std::clog << "recherche de config en local" <<std::endl;
+            std::clog << "recherche de config en local (" +gp2::Conf_param_to_str(param) + ")"<<std::endl;
 
         gp2::Get_config(param,gc);
     }
     else
     {
         if(this->debug_mode)
-            std::clog << "recherche de config avec le serveur" <<std::endl;
+            std::clog << "recherche de config avec le serveur(" +gp2::Conf_param_to_str(param) + ")" <<std::endl;
 
         this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Get_Config,this->get_byte(param),Tram::Com_bytes::EOT}).get_c_data());
 

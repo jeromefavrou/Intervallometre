@@ -51,51 +51,9 @@ public:
         std::string wb;
     };
 
-///-------------------------------------------------------------
-///initialisation aux valeurs par defaut
-///-------------------------------------------------------------
-    Intervallometre(void)
-    {
-        this->debug_mode=false;
-    }
+    Intervallometre(void);
 
-///-------------------------------------------------------------
-///charge la sequance
-///-------------------------------------------------------------
-    void load(std::string const & file)
-    {
-        std::fstream If;
-
-        If.open(file,std::ios::in);
-
-        if(!If || If.fail() || If.bad() || If.eof())
-            throw Intervallometre::Erreur(1,"sequance \""+file+"\" introuvable",Intervallometre::Erreur::ERROR);
-
-        this->m_seq.clear();
-
-        std::string instruction;
-
-        while(getline(If,instruction))
-        {
-            if(instruction.size()>2)
-            {
-                if(instruction[0]=='/'&&instruction[1]=='/')//ignore une ligne de sequance mais affiche au terminal celle ci
-                {
-                    std::cout << instruction <<std::endl;
-                    continue;
-                }
-                if(instruction[0]=='#')//ignore une ligne de sequance
-                    continue;
-            }
-
-            std::stringstream ss_buf;
-
-            ss_buf << instruction;
-
-            //on vien interpreter le reste de la sequance
-            this->m_seq.push_back(this->interpreter(ss_buf));
-        }
-    }
+    void load(std::string const & file);
 
 ///-------------------------------------------------------------
 ///execute la sequance
@@ -126,39 +84,6 @@ public:
             }
             else
             {
-                /*if(seq.work_dir!="-1") // gere le repertoire de travaille
-                {
-                    bool d(false),o(false),f(false),l(false);
-
-                    //on regarde si les dossier dof sont présent et on les cree sinon
-                    for(auto & i : ls(seq.work_dir))
-                    {
-                        if(i=="dark")
-                            d=true;
-                        else if(i=="offset")
-                            o=true;
-                        else if(i=="flat")
-                            f=true;
-                        else if(i=="light")
-                            l=true;
-                    }
-
-                    if(!d)
-                        system(std::string("mkdir "+seq.work_dir+"/dark").c_str());
-                    if(!o)
-                        system(std::string("mkdir "+seq.work_dir+"/offset").c_str());
-                    if(!f)
-                        system(std::string("mkdir "+seq.work_dir+"/flat").c_str());
-                    if(!l)
-                        system(std::string("mkdir "+seq.work_dir+"/light").c_str());
-
-                    if(this->debug_mode)
-                        std::cout << "changement de repertoire de travail: "<<seq.work_dir<<std::endl;
-
-                    rep_directory=seq.work_dir;
-                }*/
-
-
                 for(auto i=0;i<seq.frame;i++)//execute n fois une instruction grace au parametre frame
                 {
                     std::cout <<std::endl<< "frame "<<i+1<<"/"<<seq.frame<<std::endl;
@@ -167,22 +92,24 @@ public:
                     {
                         apn.check_apn();//on verifie la presance apn a chaque capture
 
-                        std::cout <<"ne pas débrancher apn capture en cour iso: " << seq.iso << " exposition: "<<seq.exposure<<" ouverture: " <<seq.aperture <<std::endl;
+                        std::cout <<"ne pas débrancher apn capture en cour; iso: " << seq.iso << " exposition: "<<seq.exposure<<" ouverture: " <<seq.aperture <<std::endl;
 
                         std::string expo=ss_cast<int,std::string>(seq.exposure-1);
                         std::string inter=ss_cast<float,std::string>(seq.intervalle);
 
                         //capture
-                        apn.capture_EOS_DSLR(inter,seq.iso,expo,seq.aperture,"1","9",seq.shutter!="-1"?seq.shutter:"bulb","0","4");//parametre par defaut a changé
+                        apn.capture_EOS_DSLR(inter,seq.iso,expo,seq.aperture,"1","9",seq.shutter!="-1"?seq.shutter:"0","0","4");//parametre par defaut a changé
                     }
-                    catch(RC_Apn::Erreur & e)
+                    catch(Error & e)
                     {
                         std::cerr << e.what() << std::endl;
 
                         if(e.get_niveau()==Error::niveau::FATAL_ERROR)
                             return ;
 
-                        i-=1;
+                        std::this_thread::sleep_for(std::chrono::duration<int,std::milli>(5000));
+
+                        i-=1;//gestion arcaique a voir avec une gestion en thread fusion avec time out
                     }
                 }
             }
@@ -202,6 +129,9 @@ public:
 ///-------------------------------------------------------------
     void check_sequance(RC_Apn & apn)
     {
+        if(this->debug_mode)
+            std::clog << "check de la sequance" << std::endl;
+
         bool check(true);
         int line(0);
         for(auto & i: this->m_seq)
@@ -292,7 +222,6 @@ public:
                 check=false;
             }
 
-
             if(i.type_raw != "dark" && i.type_raw != "flat" && i.type_raw != "offset" && i.type_raw != "light" && i.type_raw != "-1")
             {
                 if(this->debug_mode)
@@ -300,18 +229,27 @@ public:
                 check=false;
             }
 
-
             if(i.work_dir != "-1")
             {
-                std::fstream Of(i.work_dir+"/test_dir",std::ios::out);
-                if(!Of || Of.fail() || Of.bad())
+                try
                 {
-                    if(this->debug_mode)
-                        std::cerr << "ligne " << line << " erreur pour REP_DIRECTORY "<<i.work_dir<<" introuvable"<<std::endl;
-
-                    check=false;
-
-                    i.work_dir= "-1";
+                    std::ofstream Of(i.work_dir+"/test_dir");
+                    if(!Of || Of.fail() || Of.bad());
+                        throw Intervallometre::Erreur(1,"le repertoire de travail \""+i.work_dir+"\" n'a pas été trouvé",Intervallometre::Erreur::niveau::WARNING);
+                }
+                catch(Intervallometre::Erreur & e)
+                {
+                    std::cerr << e.what() << std::endl;
+                    if(e.get_niveau()==Intervallometre::Erreur::niveau::WARNING)
+                    {
+                        free_cmd("mkdir -vp "+i.work_dir,this->debug_mode);
+                        std::ofstream Of(i.work_dir+"/test_dir");
+                        if(!Of || Of.fail() || Of.bad())
+                        {
+                            i.work_dir="-1";
+                                throw Intervallometre::Erreur(2,"le repertoire de travail \""+i.work_dir+"\" est inutilisable",Intervallometre::Erreur::niveau::ERROR);
+                        }
+                    }
                 }
 
                 std::remove(std::string(i.work_dir+"/test_dir").c_str());
@@ -369,7 +307,7 @@ private:
             else if(cmd=="TYPE_RAW") ss_buffer >> seq.type_raw;
             else
             {
-                std::cout << "instruction: "<<cmd << "invalide donc ignoré" << std::endl;
+                std::cout << "instruction: "<<cmd << " invalide donc ignoré" << std::endl;
             }
         }
 
