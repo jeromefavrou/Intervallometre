@@ -6,7 +6,7 @@
 ///-------------------------------------------------------------
 RC_Apn::RC_Apn(void):m_client(nullptr),m_id_client(0),m_void(_Data(0)),m_aperture(_Data(0)),m_shutterspeed(_Data(0)),m_iso(_Data(0)),
 m_format(_Data(0)),m_target(_Data(0)),m_effect(_Data(0)),m_file(_Data(0)),m_wb(_Data(0)),debug_mode(false),tcp_client(false),
-download_and_remove(false),older(false){}
+download_and_remove(false),older(false),no_delete(false),no_download(false){}
 
 ///-------------------------------------------------------------
 ///initialisation aux valeurs par defaut
@@ -101,22 +101,26 @@ void RC_Apn::check_apn(void)
 ///-------------------------------------------------------------
 ///prend une capture et enregistre celle ci sur le disuqe
 ///-------------------------------------------------------------
-void RC_Apn::capture_EOS_DSLR(std::string inter,std::string iso,std::string exposure,std::string aperture,std::string target,std::string format, std::string shutter,std::string wb,std::string effect)
+void RC_Apn::capture_EOS_DSLR(bool setting,std::string inter,std::string iso,std::string exposure,std::string aperture,std::string target,std::string format, std::string shutter,std::string wb,std::string effect)
 {
     if(this->debug_mode)
         std::clog << "capture debute" << std::endl;
     //on prepare la capture
-    system("gphoto2 --set-config capture=on");
+    if(setting)
+    {
+        system("gphoto2 --set-config capture=on");
 
-    //on parametre l'apn  a voir pour ne set que les configs qui change
-    this->set_config(gp2::Conf_param::TARGET,target);
-    this->set_config(gp2::Conf_param::FORMAT,format);
-    this->set_config(gp2::Conf_param::APERTURE,aperture);
-    this->set_config(gp2::Conf_param::ISO,iso);
+        //on parametre l'apn  a voir pour ne set que les configs qui change
+        this->set_config(gp2::Conf_param::TARGET,target);
+        this->set_config(gp2::Conf_param::FORMAT,format);
+        this->set_config(gp2::Conf_param::APERTURE,aperture);
+        this->set_config(gp2::Conf_param::ISO,iso);
 
-    this->set_config(gp2::Conf_param::SHUTTERSPEED,shutter);
-    this->set_config(gp2::Conf_param::WHITE_BALANCE,wb);
-    this->set_config(gp2::Conf_param::PICTURE_STYLE,effect);
+        this->set_config(gp2::Conf_param::SHUTTERSPEED,shutter);
+        this->set_config(gp2::Conf_param::WHITE_BALANCE,wb);
+        this->set_config(gp2::Conf_param::PICTURE_STYLE,effect);
+    }
+
 
     //attente de 0.1 s pour evité busy sur apn
     std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(20));
@@ -222,49 +226,38 @@ char RC_Apn::get_byte(gp2::Conf_param const & param)
 ///-------------------------------------------------------------
 ///Telecharge une capture donné
 ///-------------------------------------------------------------
-void RC_Apn::download(std::string const & why,std::string const & where)
+void RC_Apn::download(gp2::Folder_data fd,std::string const & where)
 {
-    unsigned int id(0);
-
-    //on extrait l'id correspondant a la chaine de caractere
-    for(auto i=0u;i<this->m_file.size();i++)
-    {
-        if(m_file[i]==why)
+        for(auto F=fd.begin();F!=fd.end();F++)
         {
-            id=i+1;
-            break;
+            for(auto G=F->second.begin();G!=F->second.end();G++)
+            {
+                this->download(F->first+"/"+*G);
+
+                if(where=="")
+                    continue;
+
+                if(this->debug_mode)
+                    std::cout << "telechargement vers: "<<where<<std::endl;
+
+                system(std::string("cp "+*G+" "+where).c_str());
+                system(std::string("rm "+*G).c_str());
+
+            }
         }
-    }
-
-    //telechargements
-    this->download(id);
-
-    //deplacement dans le repertoire demandé
-    if(where!="")
-    {
-        if(this->debug_mode)
-            std::cout << "telechargement vers: "<<where<<std::endl;
-
-        system(std::string("cp "+why+" "+where).c_str());
-        system(std::string("rm "+why).c_str());
-    }
 }
 
 ///-------------------------------------------------------------
 ///Telecharge une capture donné
 ///-------------------------------------------------------------
-void RC_Apn::download(unsigned int why)
+void RC_Apn::download(std::string const &why)
 {
-    std::string fcast=ss_cast<unsigned int,std::string>(why);
-
-    //on telecharge
+    if(this->no_download)
+        return ;
 
     if(!this->tcp_client)
     {
-        system(std::string("gphoto2 --get-file="+fcast).c_str());
-
-        if(this->download_and_remove)
-            system(std::string("gphoto2 -f 1 -d "+fcast).c_str());//preciser le -f en "/.../..."
+        system(std::string("gphoto2 -p "+why).c_str());
     }
     else
     {
@@ -283,7 +276,38 @@ void RC_Apn::download(unsigned int why)
         rep_tram=this->Recv(15);
     }
 }
+///------------------------------------------------------------
+///detruit un fichier de l'apn
+///------------------------------------------------------------
+void RC_Apn::delete_file(gp2::Folder_data fd)
+{
+    if(this->no_delete)
+        return ;
 
+    if(!this->tcp_client)
+    {
+        if(this->debug_mode)
+            std::clog << "suppression de fichiers en local " <<std::endl;
+
+        for(auto F=fd.begin();F!=fd.end();F++)
+        {
+            for(auto G=F->second.begin();G!=F->second.end();G++)
+            {
+                gp2::Delete_file(F->first+"/"+*G,this->debug_mode);
+
+                if(this->debug_mode)
+                    std::clog << F->first+"/"+*G+ " supprimé"<<std::endl;
+            }
+
+            F->second=gp2::Data(0);
+        }
+    }
+    else
+    {
+        if(this->debug_mode)
+            std::clog << "suppression de fichier avec le serveur " <<std::endl;
+    }
+}
 ///-------------------------------------------------------------
 ///renvoie toutes les possibilités pour un paramatre de l'apn
 ///-------------------------------------------------------------

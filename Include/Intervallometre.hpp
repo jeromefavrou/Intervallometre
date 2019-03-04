@@ -18,6 +18,7 @@ class Intervallometre
 public:
     ///defini si mode debug activé
     bool debug_mode;
+    bool delete_always;
 
     ///heritage de la class d'erreur
     class Erreur : public Error
@@ -55,66 +56,7 @@ public:
 
     void load(std::string const & file);
 
-///-------------------------------------------------------------
-///execute la sequance
-///-------------------------------------------------------------
-    void run_seq(RC_Apn & apn,std::string & last_capt)
-    {
-        if(this->debug_mode)
-            std::cout << " La sequance commance" <<std::endl<<std::endl;
-
-        std::string rep_directory("");
-
-        for(auto & seq:this->m_seq)
-        {
-            if(seq.user_local)
-            {
-                if(seq.wait) //attente d'un appuis sur touche
-                {
-                    std::cin.clear();
-                    std::cout <<std::endl << "Appuis sur Enter requis" << std::endl<< std::endl;
-                    std::cin.get();
-                }
-
-                if(seq.delay>0) // attente d'un delais
-                {
-                    std::cout<<std::endl << "Attendre " << seq.delay <<" s"<<std::endl<<std::endl;
-                    std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(seq.delay*1000));
-                }
-            }
-            else
-            {
-                for(auto i=0;i<seq.frame;i++)//execute n fois une instruction grace au parametre frame
-                {
-                    std::cout <<std::endl<< "frame "<<i+1<<"/"<<seq.frame<<std::endl;
-
-                    try
-                    {
-                        apn.check_apn();//on verifie la presance apn a chaque capture
-
-                        std::cout <<"ne pas débrancher apn capture en cour; iso: " << seq.iso << " exposition: "<<seq.exposure<<" ouverture: " <<seq.aperture <<std::endl;
-
-                        std::string expo=ss_cast<int,std::string>(seq.exposure-1);
-                        std::string inter=ss_cast<float,std::string>(seq.intervalle);
-
-                        //capture
-                        apn.capture_EOS_DSLR(inter,seq.iso,expo,seq.aperture,"1","9",seq.shutter!="-1"?seq.shutter:"0","0","4");//parametre par defaut a changé
-                    }
-                    catch(Error & e)
-                    {
-                        std::cerr << e.what() << std::endl;
-
-                        if(e.get_niveau()==Error::niveau::FATAL_ERROR)
-                            return ;
-
-                        std::this_thread::sleep_for(std::chrono::duration<int,std::milli>(5000));
-
-                        i-=1;//gestion arcaique a voir avec une gestion en thread fusion avec time out
-                    }
-                }
-            }
-        }
-    }
+    void run_seq(RC_Apn & apn,std::string & last_capt);
 
 ///-------------------------------------------------------------
 ///taille de sequance
@@ -234,7 +176,7 @@ public:
                 try
                 {
                     std::ofstream Of(i.work_dir+"/test_dir");
-                    if(!Of || Of.fail() || Of.bad());
+                    if(!Of || Of.fail() || Of.bad())
                         throw Intervallometre::Erreur(1,"le repertoire de travail \""+i.work_dir+"\" n'a pas été trouvé",Intervallometre::Erreur::niveau::WARNING);
                 }
                 catch(Intervallometre::Erreur & e)
@@ -336,6 +278,39 @@ private:
 
         return true;
     }
+
+    gp2::Folder_data delta_folder(gp2::Folder_data const & ref_f,gp2::Folder_data const & data_f)
+    {
+        gp2::Folder_data delta=data_f;
+        bool f(false);
+
+        for(auto F=delta.begin();F!=delta.end();F++)
+        {
+            for(auto G=F->second.begin();G!=F->second.end();G++)
+            {
+                 for(auto H=ref_f.begin();H!=ref_f.end();H++)
+                 {
+                    for(auto I=H->second.begin();I!=H->second.end();I++)
+                    {
+                        if(H->first==F->first && *G==*I)
+                        {
+                            F->second.erase(G);
+                            G--;
+
+                            H=ref_f.begin();
+                            break;
+                        }
+                    }
+                 }
+            }
+        }
+
+        return delta;
+    }
+
+    //fichier pris par le programme
+    gp2::Folder_data ref_file_capture;
+    gp2::Folder_data file_capture;
 
     std::vector<Sequance> m_seq;
 };

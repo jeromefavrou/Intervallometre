@@ -128,6 +128,7 @@ void gp2::List_files(gp2::Folder_data & F_data,bool debug_mode=false)
 
     free_cmd("gphoto2 --list-files > .ls_files_buffer",debug_mode);
 
+    F_data.clear();
     //lecture du resultat
     std::fstream If(".ls_files_buffer",std::ios::in);
 

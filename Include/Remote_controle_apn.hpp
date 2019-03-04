@@ -19,6 +19,10 @@ public:
     bool debug_mode;
     ///coupe coller
     bool download_and_remove;
+
+    bool no_delete;
+    bool no_download;
+
     ///passage des instruction a un serveur
     bool tcp_client;
     ///definit si mode de compatibilité avec ancien apn activé
@@ -64,15 +68,17 @@ public:
     void connect(struct t_connect const & tc);
     void init_conf_param(void);
     void check_apn(void);
-    void capture_EOS_DSLR(std::string inter,std::string iso,std::string exposure,std::string aperture,std::string target,std::string format, std::string shutter,std::string wb,std::string effect);
+    void capture_EOS_DSLR(bool setting,std::string inter,std::string iso,std::string exposure,std::string aperture,std::string target,std::string format, std::string shutter,std::string wb,std::string effect);
+
     void set_config(gp2::Conf_param const & param,std::string value);
     _Data & get_parameter(gp2::Conf_param const & param);
     char get_byte(gp2::Conf_param const & param);
-    void download(std::string const & why,std::string const & where);
+    void download(gp2::Folder_data fd,std::string const & where);
+    void delete_file(gp2::Folder_data fd);
 
     private:
 
-    void download(unsigned int why);
+    void download(std::string const &  why);
     void get_config(gp2::Conf_param const & param,_Data & gc);
     bool check_acknowledge(VCHAR const & rep_tram);
     Tram Recv(int time_out);
@@ -92,10 +98,6 @@ public:
     //pour connection a serveur distant
     std::unique_ptr<CSocketTCPClient> m_client;
     int const m_id_client;
-
-    //fichier pris par le programme
-    gp2::Folder_data ref_file_capture;
-    gp2::Folder_data file_capture;
 };
 
 #endif // REMOTE_CONTROLE_APN_HPP_INCLUDED

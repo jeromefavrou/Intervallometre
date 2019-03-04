@@ -47,7 +47,7 @@ void notify_send(std::string const & msg)
 ///-------------------------------------------------------------
 void free_cmd(std::string const & cmd,bool debug_mode)
 {
-    system(std::string(cmd+std::string(!debug_mode?" > free_cmd":"")).c_str());
+    system(std::string(cmd+std::string(!debug_mode?" > .free_cmd":"")).c_str());
 
-    std::remove("free_cmd");
+    std::remove(".free_cmd");
 }

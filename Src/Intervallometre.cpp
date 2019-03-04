@@ -46,4 +46,82 @@ void Intervallometre::load(std::string const & file)
     }
 }
 
+///-------------------------------------------------------------
+///execute la sequance
+///-------------------------------------------------------------
 
+void Intervallometre::run_seq(RC_Apn & apn,std::string & last_capt)
+{
+    if(this->debug_mode)
+        std::cout << " La sequance commance" <<std::endl<<std::endl;
+
+    gp2::List_files(this->ref_file_capture,this->debug_mode);
+    this->file_capture=this->ref_file_capture;
+
+    std::string rep_directory("");
+
+    for(auto & seq:this->m_seq)
+    {
+        if(seq.user_local)
+        {
+            if(seq.work_dir!="-1")
+            {
+                rep_directory=seq.work_dir;
+                free_cmd("mkdir -vp "+seq.work_dir+"/"+"dark",this->debug_mode);
+                free_cmd("mkdir -vp "+seq.work_dir+"/"+"offset",this->debug_mode);
+                free_cmd("mkdir -vp "+seq.work_dir+"/"+"flat",this->debug_mode);
+                free_cmd("mkdir -vp "+seq.work_dir+"/"+"light",this->debug_mode);
+            }
+            if(seq.wait) //attente d'un appuis sur touche
+            {
+                std::cin.clear();
+                std::cout <<std::endl << "Appuis sur Enter requis" << std::endl<< std::endl;
+                std::cin.get();
+            }
+
+            if(seq.delay>0) // attente d'un delais
+            {
+                std::cout<<std::endl << "Attendre " << seq.delay <<" s"<<std::endl<<std::endl;
+                std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(seq.delay*1000));
+            }
+        }
+        else
+        {
+            for(auto i=0;i<seq.frame;i++)//execute n fois une instruction grace au parametre frame
+            {
+                std::cout <<std::endl<< "frame "<<i+1<<"/"<<seq.frame<<" "+(seq.type_raw!="-1"?seq.type_raw:"")<<std::endl;
+
+                try
+                {
+                    apn.check_apn();//on verifie la presance apn a chaque capture
+
+                    std::cout <<"ne pas débrancher apn, capture en cour; iso: " << seq.iso << " exposition: "<<seq.exposure<<" ouverture: " <<seq.aperture <<std::endl;
+
+                    std::string expo=ss_cast<int,std::string>(seq.exposure);
+                    std::string inter=ss_cast<float,std::string>(seq.intervalle);
+
+                    //capture
+                    apn.capture_EOS_DSLR(i==0,inter,seq.iso,expo,seq.aperture,"1","9",seq.shutter!="-1"?seq.shutter:"0","0","4");//parametre par defaut a changé
+                }
+                catch(Error & e)
+                {
+                    std::cerr << e.what() << std::endl;
+
+                    if(e.get_niveau()==Error::niveau::FATAL_ERROR)
+                        return ;
+
+                    std::this_thread::sleep_for(std::chrono::duration<int,std::milli>(5000));
+
+                    i-=1;//gestion arcaique a voir avec une gestion en thread fusion avec time out
+                }
+            }
+
+            gp2::List_files(this->file_capture,this->debug_mode);
+            gp2::Folder_data tmps_delta=this->delta_folder(this->ref_file_capture,this->file_capture);
+            apn.download(tmps_delta,rep_directory+"/"+seq.type_raw);
+            apn.delete_file(tmps_delta);
+        }
+
+
+    }
+}

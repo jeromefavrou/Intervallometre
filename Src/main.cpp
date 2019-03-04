@@ -1,4 +1,4 @@
-#define __DEBUG_MODE
+//#define __DEBUG_MODE
 //#define __TCP_MODE
 
 #define MNT_CONF_PATH ".mnt_configure"
@@ -187,8 +187,10 @@ int main(int argc,char ** argv)
 
     std::thread th(&GUI::raw_display,&Api,std::ref(last_capt));
     //std::thread th(&GUI::cam_display,&Api,0); a vir pour asi
-
+    last_capt="IMG_6981.CR2";
     std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(1000));
+
+    //shunt
 
     inter.run_seq(apn,last_capt);
 
