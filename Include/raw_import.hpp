@@ -6,10 +6,17 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/types_c.h>
 #include <libraw/libraw.h>
+#include "Error.hpp"
 
 class RAW
 {
 public:
+    class Erreur : public Error
+    {
+    public:
+        Erreur(int numero, std::string const& phrase,niveau _niveau)throw():Error(numero,phrase,_niveau){this->m_class="gp2::Erreur";};
+        virtual ~Erreur(){};
+    };
 ///-------------------------------------------------------------
 ///initialisation valeur
 ///-------------------------------------------------------------
@@ -87,11 +94,11 @@ public:
 
             ///gestion des erreur de libraw
             if( LIBRAW_SUCCESS != lrProc.open_file( this->m_file.c_str()) )
-                throw std::string("brute introuvable: "+this->m_file);
+                throw RAW::Erreur(1,"brute introuvable: "+this->m_file,RAW::Erreur::niveau::ERROR);
             if( LIBRAW_SUCCESS != lrProc.unpack())
-                throw std::string("brute indecompressable: "+this->m_file);
+                throw RAW::Erreur(2,"brute indecompressable: "+this->m_file,RAW::Erreur::niveau::ERROR);
             if( LIBRAW_SUCCESS != lrProc.raw2image() )
-                throw std::string("brute impoossible a convertire en data: "+this->m_file);
+                throw RAW::Erreur(3,"brute impoossible a convertire en data: "+this->m_file,RAW::Erreur::niveau::ERROR);
 
             ///taille de l'image
             this->m_resolution.x = lrProc.imgdata.sizes.iwidth;
@@ -136,17 +143,7 @@ public:
 
             return true;
         }
-        catch(std::string const & e)
-        {
-            std::cerr << e <<std::endl;
-
-            ///image vide si erreur
-            this->m_data=std::make_shared<cv::Mat>(cv::Mat::zeros(3000, 5000,  CV_32FC3));
-            this->m_resolution=cv::Point(5000,3000);
-
-            return false;
-        }
-        catch(std::exception const & e)
+        catch(Error & e)
         {
             std::cerr << e.what() <<std::endl;
 

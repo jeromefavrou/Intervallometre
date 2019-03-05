@@ -11,6 +11,13 @@ class GUI
  public:
      bool debug_mode;
 
+    class Erreur : public Error
+    {
+     public:
+        Erreur(int numero, std::string const& phrase,niveau _niveau)throw():Error(numero,phrase,_niveau){this->m_class="gp2::Erreur";};
+        virtual ~Erreur(){};
+    };
+
      GUI(void):m_name_blue_windows("BLUE"),m_name_green_windows("GREEN"),m_name_red_windows("RED"),m_name_full_windows("RGB")
      {
          this->debug_mode=false;

@@ -40,10 +40,10 @@ void gp2::Unmount(struct gp2::mnt const & ifm)
 ///Get_config gphoto2
 void gp2::Get_config(gp2::Conf_param const & param,gp2::Data & gc)
 {
-    system(std::string(std::string("gphoto2 --get-config=")+gp2::Conf_param_to_str(param)+std::string(" > buff")).c_str());
+    system(std::string(std::string("gphoto2 --get-config=")+gp2::Conf_param_to_str(param)+std::string(" > .buff")).c_str());
 
     //on lit les valeurs de parametre et on trie juste les données adequates
-    std::fstream If("buff",std::ios::in);
+    std::fstream If(".buff",std::ios::in);
 
     if(!If || If.bad() || If.fail())
         throw gp2::Erreur(1,"probleme de lecture de la config gp2: "+gp2::Conf_param_to_str(param),gp2::Erreur::ERROR);
@@ -72,6 +72,7 @@ void gp2::Get_config(gp2::Conf_param const & param,gp2::Data & gc)
             gc.push_back(buffer);
         }
     }
+    std::remove(".buff");
 }
 
 void gp2::Set_config(gp2::Conf_param const & param,std::string value,bool debug_mode=false)

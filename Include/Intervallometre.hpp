@@ -196,7 +196,6 @@ public:
 
                 std::remove(std::string(i.work_dir+"/test_dir").c_str());
             }
-
         }
         if(!check)
             throw Intervallometre::Erreur(2,"Une ou plusieur erreur on été trouvées dans la sequance \"--debug-mode\" pour plus d'info ",Intervallometre::Erreur::ERROR);

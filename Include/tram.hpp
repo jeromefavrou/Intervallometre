@@ -3,12 +3,20 @@
 
 #include <vector>
 #include <string>
+#include "Error.hpp"
 
 typedef std::vector<char> VCHAR;
 
 class Tram
 {
     public:
+
+        class Erreur : public Error
+        {
+        public:
+            Erreur(int numero, std::string const& phrase,niveau _niveau)throw():Error(numero,phrase,_niveau){this->m_class="gp2::Erreur";};
+            virtual ~Erreur(){};
+        };
         //ascii correspondance
         class Com_bytes
         {

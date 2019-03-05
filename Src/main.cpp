@@ -44,7 +44,8 @@ int main(int argc,char ** argv)
         apn.tcp_client=true;
     #endif // __DEBUG_MODE_TCP
 
-    apn.download_and_remove= parser::find("--download-and-remove",Parametre) || parser::find("-f",Parametre);
+    apn.no_download= parser::find("--no-download",Parametre) || parser::find("-f",Parametre);
+    apn.no_delete= parser::find("--no-delete",Parametre) || parser::find("-d",Parametre);
     apn.older=parser::find("--old-apn",Parametre) || parser::find("-o",Parametre);
 
     try
