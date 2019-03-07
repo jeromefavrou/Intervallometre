@@ -36,15 +36,15 @@ void RC_Apn::connect(struct t_connect const & tc)
         VCHAR rep_tram;
         this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Older,this->older?'1':'0',Tram::Com_bytes::EOT}).get_c_data());
         this->m_client->Read<2048>(this->m_id_client,rep_tram);
-        if(!this->check_acknowledge(rep_tram))throw RC_Apn::Erreur(1,"erreur de transmition",RC_Apn::Erreur::WARNING);
+        this->check_acknowledge(rep_tram);
 
         this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Tcp_client,'0',Tram::Com_bytes::EOT}).get_c_data());
         this->m_client->Read<2048>(this->m_id_client,rep_tram);
-        if(!this->check_acknowledge(rep_tram))throw RC_Apn::Erreur(2,"erreur de transmition",RC_Apn::Erreur::WARNING);
+        this->check_acknowledge(rep_tram);
 
         this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,RC_Apn::Com_bytes::Debug_mode,this->debug_mode?'1':'0',Tram::Com_bytes::EOT}).get_c_data());
         this->m_client->Read<2048>(this->m_id_client,rep_tram);
-        if(!this->check_acknowledge(rep_tram))throw RC_Apn::Erreur(3,"erreur de transmition",RC_Apn::Erreur::WARNING);
+        this->check_acknowledge(rep_tram);
     }
 }
 
@@ -93,8 +93,7 @@ void RC_Apn::check_apn(void)
         //attend la réponse
         Tram rep_tram=Read_Tram(Tram::Com_bytes::EOT,*this->m_client,this->m_id_client,1);
 
-        if(!this->check_acknowledge(rep_tram.get_data()))
-            throw RC_Apn::Erreur(1,"Tram incorrecte",RC_Apn::Erreur::niveau::ERROR);
+        this->check_acknowledge(rep_tram.get_data());
     }
 }
 
@@ -338,62 +337,53 @@ void RC_Apn::get_config(gp2::Conf_param const & param, _Data & gc)
 ///-------------------------------------------------------------
 ///verifie si la reponse du serveur est conforme
 ///-------------------------------------------------------------
-bool RC_Apn::check_acknowledge(VCHAR const & rep_tram)
+void RC_Apn::check_acknowledge(VCHAR const & rep_tram)
 {
     if(rep_tram.size()>0)
     {
         if(rep_tram[0]==Tram::Com_bytes::SOH && rep_tram.back()==Tram::Com_bytes::EOT)
         {
             if(static_cast<int>(rep_tram[1])==Tram::Com_bytes::ACK)
-                return true;
+                return ;
             else if(static_cast<int>(rep_tram[1])==Tram::Com_bytes::NAK)
             {
-                if(this->debug_mode)
+                std::string er("");
+                for(auto &t : rep_tram)
                 {
-                    std::cerr <<"erreur renvoyer par le serveur: " ;
+                    if(t==Tram::Com_bytes::EOT)
+                        break;
+                    if(t==Tram::Com_bytes::SOH)
+                        continue;
 
-                    for(auto &t : rep_tram)
-                    {
-                        if(t==Tram::Com_bytes::EOT)
-                            break;
-                        if(t==Tram::Com_bytes::SOH)
-                            continue;
-
-                        std::cerr << t ;
-                    }
-
-                    std::cerr<<std::endl;
+                    er+=t;
                 }
 
-                return false;
+                throw RC_Apn::Erreur(5,"erreur du serveur: "+er,RC_Apn::Erreur::niveau::WARNING);
             }
             else
             {
                 if(this->debug_mode)
                 {
-                    std::cerr <<"erreur de tram avec le serveur"<<std::endl;
-
+                    std::cerr<<std::endl;
+                    std::cerr<<std::endl;
                     for(auto &t : rep_tram)
                         std::cerr << "0x" << std::hex << static_cast<int>(t) << std::dec <<" ";
                     std::cerr<<std::endl;
                 }
 
-                return false;
+                throw RC_Apn::Erreur(6,"erreur de tram avec le serveur: ",RC_Apn::Erreur::niveau::ERROR);
             }
         }
         else
         {
-            if(this->debug_mode)
-                std::cerr << " header et footer tram non respecté par le serveur"<<std::endl;
-            return false;
+            throw RC_Apn::Erreur(7,"header et footer tram non respecté par le serveur: ",RC_Apn::Erreur::niveau::ERROR);
         }
     }
     else
     {
-        std::cout <<"erreur de connection avec le serveur" <<std::endl;
-        return false;
+         throw RC_Apn::Erreur(8,"Erreur de connexion avec le serveur: ",RC_Apn::Erreur::niveau::ERROR);
     }
-    return false;
+    throw RC_Apn::Erreur(9,"Erreur inconnue du avec le serveur: ",RC_Apn::Erreur::niveau::ERROR);
 }
 
 ///-------------------------------------------------------------
@@ -406,8 +396,7 @@ Tram RC_Apn::Recv(int time_out)
     {
         rep_tram=Read_Tram(Tram::Com_bytes::EOT,*this->m_client,this->m_id_client,time_out);
 
-        if(!this->check_acknowledge(rep_tram.get_data()))
-                throw RC_Apn::Erreur(1,"erreur de transmition",RC_Apn::Erreur::WARNING);
+        this->check_acknowledge(rep_tram.get_data());
     }
     catch(Error & e)
     {

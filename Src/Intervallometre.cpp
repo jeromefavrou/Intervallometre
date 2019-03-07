@@ -59,6 +59,7 @@ void Intervallometre::run_seq(RC_Apn & apn,std::string & last_capt)
     this->file_capture=this->ref_file_capture;
 
     std::string rep_directory("");
+    bool disconnect(false);
 
     for(auto & seq:this->m_seq)
     {
@@ -101,7 +102,8 @@ void Intervallometre::run_seq(RC_Apn & apn,std::string & last_capt)
                     std::string inter=ss_cast<float,std::string>(seq.intervalle);
 
                     //capture
-                    apn.capture_EOS_DSLR(i==0,inter,seq.iso,expo,seq.aperture,"1","9",seq.shutter!="-1"?seq.shutter:"0","0","4");//parametre par defaut a changé
+                    apn.capture_EOS_DSLR(i==0 || disconnect ,inter,seq.iso,expo,seq.aperture,"1","9",seq.shutter!="-1"?seq.shutter:"0","0","4");//parametre par defaut a changé
+                    disconnect=false;
                 }
                 catch(Error & e)
                 {
@@ -110,9 +112,13 @@ void Intervallometre::run_seq(RC_Apn & apn,std::string & last_capt)
                     if(e.get_niveau()==Error::niveau::FATAL_ERROR)
                         return ;
 
-                    std::this_thread::sleep_for(std::chrono::duration<int,std::milli>(5000));
+                    std::clog << "resoudre l'eurreur et appuyer sur enter, ou quitter le programme" << std::endl;
+                    std::cin.get();
+                    std::cin.clear();
 
-                    i-=1;//gestion arcaique a voir avec une gestion en thread fusion avec time out
+                    disconnect=true;
+
+                    i--;
                 }
             }
 
@@ -121,7 +127,5 @@ void Intervallometre::run_seq(RC_Apn & apn,std::string & last_capt)
             apn.download(tmps_delta,rep_directory+"/"+seq.type_raw);
             apn.delete_file(tmps_delta);
         }
-
-
     }
 }

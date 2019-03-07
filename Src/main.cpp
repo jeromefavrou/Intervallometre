@@ -186,7 +186,8 @@ int main(int argc,char ** argv)
 
     std::string last_capt("");
 
-    std::thread th(&GUI::raw_display,&Api,std::ref(last_capt));
+    //gp2::Folder_data download;
+    //std::thread th(&GUI::raw_display,&Api,std::ref(last_capt));
     //std::thread th(&GUI::cam_display,&Api,0); a vir pour asi
     last_capt="IMG_6981.CR2";
     std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(1000));
@@ -197,7 +198,7 @@ int main(int argc,char ** argv)
 
     last_capt="exit";
 
-    th.join();
+    //th.join();
 
     gp2::Mount(_mount);
 

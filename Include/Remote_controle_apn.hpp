@@ -80,7 +80,7 @@ public:
 
     void download(std::string const &  why);
     void get_config(gp2::Conf_param const & param,_Data & gc);
-    bool check_acknowledge(VCHAR const & rep_tram);
+    void check_acknowledge(VCHAR const & rep_tram);
     Tram Recv(int time_out);
 
     ///donné de sauvegarde parametre apn
