@@ -1,5 +1,5 @@
-//#define __DEBUG_MODE
-//#define __TCP_MODE
+#define __DEBUG_MODE
+#define __TCP_MODE
 
 #define MNT_CONF_PATH ".mnt_configure"
 #define CLIENT_CONF_PATH ".tcp_configure"
@@ -104,7 +104,7 @@ int main(int argc,char ** argv)
         {
             std::cerr << e.what() <<std::endl;
 
-            if(e.get_niveau()!=Error::niveau::WARNING)
+            if(e.get_niveau()!=Error::niveau::WARNING || apn.tcp_client)
                 return -1;
         }
     }
@@ -180,7 +180,7 @@ int main(int argc,char ** argv)
     {
         std::cerr << e.what() << std::endl;
 
-        if(e.get_niveau()!=Error::niveau::WARNING)
+        if(e.get_niveau()!=Error::niveau::WARNING || apn.tcp_client)
             return -1;
     }
 
