@@ -76,6 +76,7 @@ public:
     char get_byte(gp2::Conf_param const & param);
     void download(gp2::Folder_data fd,std::string const & where);
     void delete_file(gp2::Folder_data fd);
+    void Ls_file(gp2::Folder_data & ls_f);
 
     private:
 

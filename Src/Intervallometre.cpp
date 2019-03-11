@@ -55,7 +55,7 @@ void Intervallometre::run_seq(RC_Apn & apn,std::string & last_capt)
     if(this->debug_mode)
         std::cout << " La sequance commance" <<std::endl<<std::endl;
 
-    gp2::List_files(this->ref_file_capture,this->debug_mode);
+    apn.Ls_file(this->ref_file_capture);
     this->file_capture=this->ref_file_capture;
 
     std::string rep_directory("");
@@ -122,7 +122,7 @@ void Intervallometre::run_seq(RC_Apn & apn,std::string & last_capt)
                 }
             }
 
-            gp2::List_files(this->file_capture,this->debug_mode);
+            apn.Ls_file(this->file_capture);
             gp2::Folder_data tmps_delta=this->delta_folder(this->ref_file_capture,this->file_capture);
             apn.download(tmps_delta,rep_directory+"/"+seq.type_raw);
             apn.delete_file(tmps_delta);

@@ -448,3 +448,34 @@ Tram RC_Apn::Recv(int time_out)
     return rep_tram;
 }
 
+void RC_Apn::Ls_file(gp2::Folder_data & ls_f)
+{
+    if(!this->tcp_client)
+    {
+        if(!this->tcp_client)
+            std::clog << "listing des fichier en local en cours" << std::endl;
+
+        gp2::List_files(ls_f,this->debug_mode);
+
+        if(!this->tcp_client)
+            std::clog << "listing des fichier en local terminé" << std::endl;
+    }
+    else
+    {
+        if(!this->tcp_client)
+            std::clog << "listing des fichier depuis serveur en cours" << std::endl;
+
+        Tram tram,rep_tram;
+        tram+=char(Tram::Com_bytes::SOH);
+        tram+=char(RC_Apn::Com_bytes::Ls_Files);
+        tram+=char(Tram::Com_bytes::EOT);
+
+        this->m_client->Write(this->m_id_client,tram.get_data());
+
+        rep_tram=this->Recv(15);
+
+        if(!this->tcp_client)
+            std::clog << "listing des fichier depuis serveur terminé" << std::endl;
+    }
+}
+
