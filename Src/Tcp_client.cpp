@@ -96,10 +96,7 @@ Tram Read_Tram(char const ending_byte,CSocketTCPClient & Client,int id_client,in
 {
     Tram data;
 
-    std::chrono::time_point<std::chrono::system_clock> start(std::chrono::system_clock::now()),check;
     bool Do=true;
-
-    std::thread time_out(&ctrl_time_out,std::ref(Do),_time_out);
 
     while(Do)
     {
@@ -112,12 +109,6 @@ Tram Read_Tram(char const ending_byte,CSocketTCPClient & Client,int id_client,in
         if(tps.back()==ending_byte)
             break;
     }
-
-    if(!Do)
-        throw std::string("communication time out");
-
-    Do=false;
-    time_out.join();
 
     return data;
 }

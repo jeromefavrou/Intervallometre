@@ -155,7 +155,8 @@ int main(int argc,char ** argv)
     {
         apn.check_apn();
 
-        gp2::Unmount(_mount);
+        if(!apn.tcp_client)
+            gp2::Unmount(_mount);
 
         std::this_thread::sleep_for(std::chrono::duration<int,std::milli>(3000));
 
@@ -199,8 +200,8 @@ int main(int argc,char ** argv)
     last_capt="exit";
 
     //th.join();
-
-    gp2::Mount(_mount);
+    if(!apn.tcp_client)
+        gp2::Mount(_mount);
 
     return 0;
 }
