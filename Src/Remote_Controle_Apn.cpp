@@ -138,11 +138,8 @@ void RC_Apn::capture_EOS_DSLR(bool setting,std::string inter,std::string iso,std
 
         tram+=char(Tram::Com_bytes::SOH);
         tram+=char(RC_Apn::Com_bytes::Capture_Eos_Dslr);
-        tram+=char(RC_Apn::Com_bytes::Exposure);
         tram+=exposure;
         tram+=char(Tram::Com_bytes::US);
-        tram+=char(RC_Apn::Com_bytes::Intervalle);
-        tram+=inter;
         tram+=char(Tram::Com_bytes::EOT);
 
         this->m_client->Write(this->m_id_client,tram.get_data());
@@ -473,6 +470,34 @@ void RC_Apn::Ls_file(gp2::Folder_data & ls_f)
         this->m_client->Write(this->m_id_client,tram.get_data());
 
         rep_tram=this->Recv(15);
+        bool f(false);
+
+        long int str_begin(2),str_end(0);
+        std::string last_file;
+        std::string buff("");
+
+        ls_f.clear();
+
+        for(auto i=2;i<rep_tram.size();i++)
+        {
+            if(rep_tram.get_data()[i]==(char)Tram::Com_bytes::EOT)
+                break;
+            else if(rep_tram.get_data()[i]==(char)Tram::Com_bytes::GS)
+            {
+                last_file=buff;
+                ls_f[last_file]=gp2::Data(0);
+                buff="";
+                continue;
+            }
+            else if(rep_tram.get_data()[i]==(char)Tram::Com_bytes::US)
+            {
+                ls_f[last_file].push_back(buff);
+                buff="";
+                continue;
+            }
+            buff+=(char)rep_tram.get_data()[i];
+        }
+
 
         if(!this->tcp_client)
             std::clog << "listing des fichier depuis serveur terminé" << std::endl;
