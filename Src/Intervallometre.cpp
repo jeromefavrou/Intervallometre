@@ -79,6 +79,10 @@ void Intervallometre::run_seq(RC_Apn & apn,std::string & last_capt)
                 std::cout <<std::endl << "Appuis sur Enter requis" << std::endl<< std::endl;
                 std::cin.get();
             }
+            if(seq.stop_server) //attente d'un appuis sur touche
+            {
+                apn.close_server();
+            }
 
             if(seq.delay>0) // attente d'un delais
             {

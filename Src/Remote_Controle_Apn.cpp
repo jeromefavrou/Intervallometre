@@ -96,7 +96,18 @@ void RC_Apn::check_apn(void)
         this->check_acknowledge(rep_tram.get_data());
     }
 }
-
+///-------------------------------------------------------------
+///demande un arret du serveur
+///-------------------------------------------------------------
+void RC_Apn::close_server(void)
+{
+    if(this->tcp_client)
+    {
+        this->m_client->Write(this->m_id_client,Tram(VCHAR{Tram::Com_bytes::SOH,Tram::Com_bytes::CS,Tram::Com_bytes::EOT}).get_c_data());
+        this->m_client->CloseSocket(this->m_id_client);
+        this->tcp_client=false;
+    }
+}
 ///-------------------------------------------------------------
 ///prend une capture et enregistre celle ci sur le disuqe
 ///-------------------------------------------------------------

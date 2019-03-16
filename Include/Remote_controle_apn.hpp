@@ -67,6 +67,7 @@ public:
     RC_Apn(void);
     ~RC_Apn(void);
     void connect(struct t_connect const & tc);
+    void close_server(void);
     void init_conf_param(void);
     void check_apn(void);
     void capture_EOS_DSLR(bool setting,std::string inter,std::string iso,std::string exposure,std::string aperture,std::string target,std::string format, std::string shutter,std::string wb,std::string effect);
@@ -77,6 +78,7 @@ public:
     void download(gp2::Folder_data fd,std::string const & where);
     void delete_file(gp2::Folder_data fd);
     void Ls_file(gp2::Folder_data & ls_f);
+
 
     private:
 

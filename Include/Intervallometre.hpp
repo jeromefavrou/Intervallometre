@@ -34,6 +34,7 @@ public:
 
         bool user_local; //si la commande vien du programe ou concerne gphoto2
         bool wait;
+        bool stop_server;
 
         int frame;
         int exposure;
@@ -211,6 +212,7 @@ private:
         //on initialise npar defaut a false ou -1
         Sequance seq;
         seq.wait=false;
+        seq.stop_server=false;
         seq.type_raw="-1";
         seq.work_dir="-1";
         seq.delay=-1;
@@ -233,6 +235,7 @@ private:
             if(cmd=="LOC") seq.user_local=true;
             else if(cmd=="GP2") seq.user_local=false;
             else if(cmd=="WAIT") seq.wait=true;
+            else if(cmd=="STOP_SERVER") seq.stop_server=true;
             else if(cmd=="DELAY") ss_buffer >> seq.delay;
             else if(cmd=="FRAME") ss_buffer >> seq.frame;
             else if(cmd=="INTER") ss_buffer >> seq.intervalle;
