@@ -237,7 +237,11 @@ private:
             else if(cmd=="WAIT") seq.wait=true;
             else if(cmd=="STOP_SERVER") seq.stop_server=true;
             else if(cmd=="DELAY") ss_buffer >> seq.delay;
-            else if(cmd=="FRAME") ss_buffer >> seq.frame;
+            else if(cmd=="FRAME")
+            {
+                ss_buffer >> seq.frame;
+                this->nb_capture+=seq.frame;
+            }
             else if(cmd=="INTER") ss_buffer >> seq.intervalle;
             else if(cmd=="ISO") ss_buffer >> seq.iso;
             else if(cmd=="EXPO") ss_buffer >> seq.exposure;
@@ -313,7 +317,7 @@ private:
     //fichier pris par le programme
     gp2::Folder_data ref_file_capture;
     gp2::Folder_data file_capture;
-
+    int nb_capture;
     std::vector<Sequance> m_seq;
 };
 

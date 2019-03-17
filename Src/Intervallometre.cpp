@@ -6,6 +6,7 @@
 Intervallometre::Intervallometre(void)
 {
     this->debug_mode=false;
+    this->nb_capture=0;
 }
 
 ///-------------------------------------------------------------
@@ -52,9 +53,16 @@ void Intervallometre::load(std::string const & file)
 
 void Intervallometre::run_seq(RC_Apn & apn,std::string & last_capt)
 {
-    if(this->debug_mode)
-        std::cout << " La sequance commance" <<std::endl<<std::endl;
 
+    std::cout << "La sequance commance " <<std::endl;
+    std::cout <<this->nb_capture <<" captures seront effectuées " <<std::endl;
+    std::cout <<"environ " << this->nb_capture * (apn.no_delete?23:0)<<" Mo seront utilisés dans l'APN"<<std::endl;
+    std::cout <<"environ " << this->nb_capture * (apn.no_download || apn.tcp_client?0:23)<<" Mo seront utilisés sur ce PC"<<std::endl;
+    std::cout <<"environ " << this->nb_capture * (apn.no_download || !apn.tcp_client?0:23)<<" Mo seront utilisés sur le serveur"<<std::endl;
+    std::cout <<std::endl << "Assurez vous d'avoir asser de memoire" << std::endl;
+    std::cin.clear();
+    std::cout <<std::endl << "Appuis sur Enter requis" << std::endl<< std::endl;
+    std::cin.get();
     apn.Ls_file(this->ref_file_capture);
     this->file_capture=this->ref_file_capture;
 
@@ -126,6 +134,7 @@ void Intervallometre::run_seq(RC_Apn & apn,std::string & last_capt)
                 }
             }
 
+            std::this_thread::sleep_for(std::chrono::duration<float, std::milli>(1000));
             apn.Ls_file(this->file_capture);
             gp2::Folder_data tmps_delta=this->delta_folder(this->ref_file_capture,this->file_capture);
             apn.download(tmps_delta,rep_directory+"/"+seq.type_raw);

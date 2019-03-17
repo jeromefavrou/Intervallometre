@@ -17,8 +17,6 @@ public:
 
     ///defini si mode debug activé
     bool debug_mode;
-    ///coupe coller
-    bool download_and_remove;
 
     bool no_delete;
     bool no_download;
@@ -45,7 +43,9 @@ public:
         static char constexpr Capture_Eos_Dslr=0x3D; //capture eos dslr
         static char constexpr Download=0x3E; //download
         static char constexpr Delete_File=0x3F; //download and remove
-        static char constexpr Ls_Files=0x40; //download and remove
+        static char constexpr Ls_Files=0x40; //listing file
+        static char constexpr Mk_dir=0x41; //mk_dir
+        static char constexpr Check_Mem=0x41; //check free memory
 
         static char constexpr Aperture=0x61;
         static char constexpr Shutterspeed=0x62;
@@ -79,10 +79,9 @@ public:
     void delete_file(gp2::Folder_data fd);
     void Ls_file(gp2::Folder_data & ls_f);
 
-
     private:
 
-    void download(std::string const &  why);
+    void download(std::string const &where,std::string const &why,std::string const & file_cp);
     void get_config(gp2::Conf_param const & param,_Data & gc);
     void check_acknowledge(VCHAR const & rep_tram);
     Tram Recv(int time_out);

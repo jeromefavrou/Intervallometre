@@ -1,5 +1,5 @@
-#define __DEBUG_MODE
-#define __TCP_MODE
+//#define __DEBUG_MODE
+//#define __TCP_MODE
 
 #define MNT_CONF_PATH ".mnt_configure"
 #define CLIENT_CONF_PATH ".tcp_configure"
@@ -45,7 +45,7 @@ int main(int argc,char ** argv)
     #endif // __DEBUG_MODE_TCP
 
     apn.no_download= parser::find("--no-download",Parametre) || parser::find("-f",Parametre);
-    apn.no_delete= parser::find("--no-delete",Parametre) || parser::find("-d",Parametre);
+    apn.no_delete= parser::find("--no-delete",Parametre) || parser::find("-r",Parametre);
     apn.older=parser::find("--old-apn",Parametre) || parser::find("-o",Parametre);
 
     try

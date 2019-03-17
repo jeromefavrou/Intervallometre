@@ -5,8 +5,7 @@
 ///initialisation aux valeurs par defaut
 ///-------------------------------------------------------------
 RC_Apn::RC_Apn(void):m_client(nullptr),m_id_client(0),m_void(_Data(0)),m_aperture(_Data(0)),m_shutterspeed(_Data(0)),m_iso(_Data(0)),
-m_format(_Data(0)),m_target(_Data(0)),m_effect(_Data(0)),m_file(_Data(0)),m_wb(_Data(0)),debug_mode(false),tcp_client(false),
-download_and_remove(false),older(false),no_delete(false),no_download(false){}
+m_format(_Data(0)),m_target(_Data(0)),m_effect(_Data(0)),m_file(_Data(0)),m_wb(_Data(0)),debug_mode(false),tcp_client(false),older(false),no_delete(false),no_download(false){}
 
 ///-------------------------------------------------------------
 ///initialisation aux valeurs par defaut
@@ -118,7 +117,7 @@ void RC_Apn::capture_EOS_DSLR(bool setting,std::string inter,std::string iso,std
     //on prepare la capture
     if(setting)
     {
-        system("gphoto2 --set-config capture=on");
+        //system("gphoto2 --set-config capture=on");
 
         //on parametre l'apn  a voir pour ne set que les configs qui change
         this->set_config(gp2::Conf_param::TARGET,target);
@@ -239,7 +238,7 @@ void RC_Apn::download(gp2::Folder_data fd,std::string const & where)
         {
             for(auto G=F->second.begin();G!=F->second.end();G++)
             {
-                this->download(F->first+"/"+*G);
+                this->download(F->first,*G,where);
 
                 if(where=="")
                     continue;
@@ -247,9 +246,11 @@ void RC_Apn::download(gp2::Folder_data fd,std::string const & where)
                 if(this->debug_mode)
                     std::cout << "telechargement vers: "<<where<<std::endl;
 
-                system(std::string("cp "+*G+" "+where).c_str());
-                system(std::string("rm "+*G).c_str());
-
+                if(!this->tcp_client)
+                {
+                    system(std::string("cp "+*G+" "+where).c_str());
+                    system(std::string("rm "+*G).c_str());
+                }
             }
         }
 }
@@ -257,7 +258,7 @@ void RC_Apn::download(gp2::Folder_data fd,std::string const & where)
 ///-------------------------------------------------------------
 ///Telecharge une capture donné
 ///-------------------------------------------------------------
-void RC_Apn::download(std::string const &why)
+void RC_Apn::download(std::string const &where,std::string const &why,std::string const& file_cp)
 {
     if(this->no_download)
         return ;
@@ -266,7 +267,8 @@ void RC_Apn::download(std::string const &why)
     {
         if(this->debug_mode)
             std::clog << "téléchargement local en cours"<<std::endl;
-        system(std::string("gphoto2 -p "+why).c_str());
+
+        gp2::Download_file(where+"/"+why,this->debug_mode);
 
         if(this->debug_mode)
             std::clog << "téléchargement local terminé"<<std::endl;
@@ -279,7 +281,10 @@ void RC_Apn::download(std::string const &why)
         Tram tram,rep_tram;
         tram+=char(Tram::Com_bytes::SOH);
         tram+=char(RC_Apn::Com_bytes::Download);
+        tram+=where;
+        tram+=char(Tram::Com_bytes::GS);
         tram+=why;
+        tram+=char(Tram::Com_bytes::US);
         tram+=char(Tram::Com_bytes::EOT);
 
         this->m_client->Write(this->m_id_client,tram.get_data());
@@ -287,7 +292,7 @@ void RC_Apn::download(std::string const &why)
         rep_tram=this->Recv(15);
 
         if(this->debug_mode)
-            std::clog << "téléchargement depuis serveur en cours"<<std::endl;
+            std::clog << "téléchargement depuis serveur termine"<<std::endl;
     }
 }
 ///------------------------------------------------------------
