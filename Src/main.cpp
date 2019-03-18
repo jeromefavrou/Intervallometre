@@ -1,5 +1,5 @@
-//#define __DEBUG_MODE
-//#define __TCP_MODE
+#define __DEBUG_MODE
+#define __TCP_MODE
 
 #define MNT_CONF_PATH ".mnt_configure"
 #define CLIENT_CONF_PATH ".tcp_configure"

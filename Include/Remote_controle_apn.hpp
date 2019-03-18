@@ -45,7 +45,7 @@ public:
         static char constexpr Delete_File=0x3F; //download and remove
         static char constexpr Ls_Files=0x40; //listing file
         static char constexpr Mk_dir=0x41; //mk_dir
-        static char constexpr Check_Mem=0x41; //check free memory
+        static char constexpr Check_Mem=0x42; //check free memory
 
         static char constexpr Aperture=0x61;
         static char constexpr Shutterspeed=0x62;
@@ -54,12 +54,12 @@ public:
         static char constexpr Target=0x65;
         static char constexpr White_balance=0x66;
         static char constexpr Picture_style=0x67;
-        static char constexpr Older=0x69;
-        static char constexpr Exposure=0x6A;
-        static char constexpr Intervalle=0x6B;
+        static char constexpr Older=0x68;
+        static char constexpr Exposure=0x69;
+        static char constexpr Intervalle=0x6A;
 
-        static char constexpr Debug_mode=0x6C;
-        static char constexpr Tcp_client=0x6D;
+        static char constexpr Debug_mode=0x6B;
+        static char constexpr Tcp_client=0x6C;
     };
     ///type _data
     typedef gp2::Data _Data;
@@ -78,6 +78,8 @@ public:
     void download(gp2::Folder_data fd,std::string const & where);
     void delete_file(gp2::Folder_data fd);
     void Ls_file(gp2::Folder_data & ls_f);
+
+    void mk_dir(std::string const & dir);
 
     private:
 

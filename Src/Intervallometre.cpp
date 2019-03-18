@@ -76,10 +76,11 @@ void Intervallometre::run_seq(RC_Apn & apn,std::string & last_capt)
             if(seq.work_dir!="-1")
             {
                 rep_directory=seq.work_dir;
-                free_cmd("mkdir -vp "+seq.work_dir+"/"+"dark",this->debug_mode);
-                free_cmd("mkdir -vp "+seq.work_dir+"/"+"offset",this->debug_mode);
-                free_cmd("mkdir -vp "+seq.work_dir+"/"+"flat",this->debug_mode);
-                free_cmd("mkdir -vp "+seq.work_dir+"/"+"light",this->debug_mode);
+
+                apn.mk_dir(seq.work_dir+"/"+"dark");
+                apn.mk_dir(seq.work_dir+"/"+"offset");
+                apn.mk_dir(seq.work_dir+"/"+"flat");
+                apn.mk_dir(seq.work_dir+"/"+"light");
             }
             if(seq.wait) //attente d'un appuis sur touche
             {

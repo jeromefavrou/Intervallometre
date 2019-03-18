@@ -149,7 +149,6 @@ void RC_Apn::capture_EOS_DSLR(bool setting,std::string inter,std::string iso,std
         tram+=char(Tram::Com_bytes::SOH);
         tram+=char(RC_Apn::Com_bytes::Capture_Eos_Dslr);
         tram+=exposure;
-        tram+=char(Tram::Com_bytes::US);
         tram+=char(Tram::Com_bytes::EOT);
 
         this->m_client->Write(this->m_id_client,tram.get_data());
@@ -248,11 +247,30 @@ void RC_Apn::download(gp2::Folder_data fd,std::string const & where)
 
                 if(!this->tcp_client)
                 {
-                    system(std::string("cp "+*G+" "+where).c_str());
-                    system(std::string("rm "+*G).c_str());
+                    system(std::string("mv "+*G+" "+where).c_str());
                 }
             }
         }
+}
+
+void RC_Apn::mk_dir(std::string const & dir)
+{
+    if(!this->tcp_client)
+    {
+        free_cmd("mkdir -vp "+dir,this->debug_mode);
+    }
+    else
+    {
+        Tram tram;
+        tram+=char(Tram::Com_bytes::SOH);
+        tram+=char(RC_Apn::Com_bytes::Mk_dir);
+        tram+=dir;
+        tram+=char(Tram::Com_bytes::EOT);
+
+        this->m_client->Write(this->m_id_client,tram.get_data());
+
+        this->Recv(15);
+    }
 }
 
 ///-------------------------------------------------------------
@@ -282,8 +300,10 @@ void RC_Apn::download(std::string const &where,std::string const &why,std::strin
         tram+=char(Tram::Com_bytes::SOH);
         tram+=char(RC_Apn::Com_bytes::Download);
         tram+=where;
-        tram+=char(Tram::Com_bytes::GS);
+        tram+=char(Tram::Com_bytes::US);
         tram+=why;
+        tram+=char(Tram::Com_bytes::US);
+        tram+=file_cp;
         tram+=char(Tram::Com_bytes::US);
         tram+=char(Tram::Com_bytes::EOT);
 
